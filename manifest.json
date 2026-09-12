@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "name": "test-module",
+  "version": "1.0.0",
+  "entrypoint": "test-module.sh",
+  "commands": {
+    "default": {
+      "requires_root": false
+    }
+  },
+  "dependencies": {
+    "system": [],
+    "modules": []
+  }
+}
