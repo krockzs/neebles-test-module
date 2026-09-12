@@ -1,4 +1,4 @@
 # N.E.E.B.L.E.S. Test Module
 
-Dummy module used only to test the N.E.E.B.L.E.S. Boss module registry,
-installation and update flow.
+Temporary module used to validate Boss module installation,
+activation, icon discovery and update flow.

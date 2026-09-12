@@ -1,4 +1,10 @@
 #!/bin/bash
 
-echo "N.E.E.B.L.E.S. test-module funcionando."
-echo "Version 1.0.0"
+case "${1:-default}" in
+    open)
+        echo "N.E.E.B.L.E.S. Test Module 1.0.0 - OPEN"
+        ;;
+    *)
+        echo "N.E.E.B.L.E.S. Test Module 1.0.0"
+        ;;
+esac
