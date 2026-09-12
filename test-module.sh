@@ -2,9 +2,9 @@
 
 case "${1:-default}" in
     open)
-        echo "N.E.E.B.L.E.S. Test Module 1.0.0 - OPEN"
+        echo "N.E.E.B.L.E.S. Test Module 1.0.1 - OPEN"
         ;;
     *)
-        echo "N.E.E.B.L.E.S. Test Module 1.0.0"
+        echo "N.E.E.B.L.E.S. Test Module 1.0.1"
         ;;
 esac

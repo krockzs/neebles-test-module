@@ -1,6 +1,6 @@
 {
   "schema": 1,
   "name": "test-module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "entrypoint": "test-module.sh"
 }
