@@ -2,5 +2,23 @@
   "schema": 1,
   "name": "test-module",
   "version": "1.0.0",
-  "entrypoint": "test-module.sh"
+  "entrypoint": "test-module.sh",
+  "dependencies": {
+    "system": [
+      {
+        "name": "python3",
+        "provider": "apt",
+        "package": "python3",
+        "check": "python3",
+        "required": true
+      },
+      {
+        "name": "python3-tk",
+        "provider": "apt",
+        "package": "python3-tk",
+        "required": true
+      }
+    ],
+    "modules": []
+  }
 }
