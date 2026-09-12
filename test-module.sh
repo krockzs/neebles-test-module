@@ -13,6 +13,6 @@ case "${1:-default}" in
             "$MODULE_DIR/test-module-gui.py"
         ;;
     *)
-        echo "N.E.E.B.L.E.S. Test Module 1.0.1"
+        echo "N.E.E.B.L.E.S. Test Module 1.0.0"
         ;;
 esac
