@@ -1,6 +1,8 @@
 {
-  "app.title": "Módulo de Prueba N.E.E.B.L.E.S. %1",
-  "app.heading": "Módulo de prueba N.E.E.B.L.E.S.",
-  "app.subtitle": "Prueba de sistema de idiomas",
-  "cli.info": "Módulo de Prueba N.E.E.B.L.E.S. %1"
+  "app.title": "Módulo de Referencia N.E.E.B.L.E.S. %1",
+  "app.heading": "Módulo de referencia N.E.E.B.L.E.S.",
+  "app.subtitle": "Contrato canónico Schema 3",
+  "cli.info": "Módulo de Referencia N.E.E.B.L.E.S. %1",
+  "notification.title": "Módulo de referencia",
+  "notification.message": "La notificación fue generada por el módulo."
 }

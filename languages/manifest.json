@@ -5,6 +5,10 @@
     {
       "code": "es_CL",
       "file": "es_CL.json"
+    },
+    {
+      "code": "en_US",
+      "file": "en_US.json"
     }
   ]
 }
