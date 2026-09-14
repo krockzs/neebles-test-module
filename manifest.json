@@ -1,7 +1,7 @@
 {
-  "schema": 2,
+  "schema": 3,
   "name": "test-module",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "entrypoint": "test-module.sh",
   "dependencies": {
     "system": [
@@ -47,5 +47,17 @@
       }
     ],
     "modules": []
+  },
+  "commands": {
+    "default": {
+      "requires_root": false,
+      "lifecycle": "oneshot",
+      "launcher": false
+    },
+    "open": {
+      "requires_root": false,
+      "lifecycle": "tracked",
+      "launcher": true
+    }
   }
 }
