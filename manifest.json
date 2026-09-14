@@ -1,21 +1,48 @@
 {
-  "schema": 1,
+  "schema": 2,
   "name": "test-module",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "entrypoint": "test-module.sh",
   "dependencies": {
     "system": [
       {
         "name": "python3",
-        "provider": "apt",
-        "package": "python3",
-        "check": "python3",
+        "install": {
+          "installer": "apt",
+          "operation": "install",
+          "variables": {
+            "packages": [
+              "python3"
+            ]
+          }
+        },
+        "verify": {
+          "installer": "dpkg-query",
+          "operation": "check_installed",
+          "variables": {
+            "package": "python3"
+          }
+        },
         "required": true
       },
       {
         "name": "python3-tk",
-        "provider": "apt",
-        "package": "python3-tk",
+        "install": {
+          "installer": "apt",
+          "operation": "install",
+          "variables": {
+            "packages": [
+              "python3-tk"
+            ]
+          }
+        },
+        "verify": {
+          "installer": "dpkg-query",
+          "operation": "check_installed",
+          "variables": {
+            "package": "python3-tk"
+          }
+        },
         "required": true
       }
     ],
