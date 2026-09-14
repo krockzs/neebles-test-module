@@ -1,7 +1,7 @@
 {
   "schema": 3,
   "name": "test-module",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "entrypoint": "test-module.sh",
   "dependencies": {
     "system": [
