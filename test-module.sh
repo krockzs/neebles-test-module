@@ -9,7 +9,7 @@ MODULE_DIR="$(
 
 case "${1:-default}" in
     open)
-        exec python3 \
+        python3 \
             "$MODULE_DIR/test-module-gui.py"
         ;;
 
