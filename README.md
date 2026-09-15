@@ -1,34 +1,20 @@
-# N.E.E.B.L.E.S. Schema 3 Reference Module
+# N.E.E.B.L.E.S. Test Module
 
-Este repositorio es el módulo de referencia canónico para el contrato de módulos
-N.E.E.B.L.E.S. Schema 3.
+Módulo de referencia para validar el ciclo completo de integración con N.E.E.B.L.E.S. Boss.
 
-Su objetivo no es definir cómo debe estar implementado internamente un módulo.
-Su objetivo es demostrar qué necesita declarar un módulo para integrarse con Boss.
+## Objetivo
 
-## Principio
+Este módulo existe para comprobar, con una implementación mínima, que Boss puede:
 
-Boss conoce contratos, no detalles internos.
+- instalar, actualizar y desinstalar un módulo desde el registry;
+- descubrir su launcher y abrir su UI;
+- cargar contratos dinámicos;
+- registrar un runtime persistente;
+- ejecutar comandos por Konsole y desde la UI propia;
+- mostrar notificaciones generadas por el módulo;
+- administrar un tray provider propio del módulo.
 
-El módulo mantiene control sobre:
-
-- su implementación;
-- su lenguaje y archivos de traducción;
-- sus dependencias declaradas;
-- sus procesos;
-- sus textos de notificación;
-- su tecnología interna.
-
-Boss gobierna:
-
-- instalación y actualización;
-- validación del manifest;
-- dependencias declaradas;
-- lifecycle;
-- launcher;
-- autorización;
-- negociación del idioma global;
-- transporte y política de notificaciones.
+La implementación interna usa Bash, Python y Tkinter sólo como ejemplo. El contrato con Boss no depende de esos lenguajes.
 
 ## Estructura
 
@@ -37,81 +23,55 @@ Boss gobierna:
 ├── manifest.json
 ├── README.md
 ├── icon.jpeg
-├── languages/
-│   ├── manifest.json
-│   ├── es_CL.json
-│   └── en_US.json
 ├── test-module.sh
-└── test-module-gui.py
+├── runtime.py
+├── contracts/
+│   └── commands.json
+├── ui/
+│   └── test-module-ui.py
+├── tray/
+│   └── tray-provider.py
+└── languages/
+    ├── manifest.json
+    ├── es_CL.json
+    └── en_US.json
 ```
 
-## Contratos demostrados
+## Launcher
 
-### Schema
+Boss descubre `open` desde el bloque Schema 3 compatible del manifest. Esa acción levanta el runtime persistente y la UI del módulo.
 
-`manifest.json` usa Schema 3.
+```bash
+neebles test-module open
+```
 
-### Entrypoint
+Mientras la UI permanece abierta, el runtime queda registrado en Boss y atiende los endpoints declarados por `contracts/commands.json`.
 
-`test-module.sh` es el único entrypoint declarado.
+## Comandos dinámicos
 
-### Lifecycle
+```bash
+neebles test-module version
+neebles test-module hello
+neebles test-module notify
+neebles test-module state
+```
 
-El comando `default` es `oneshot`.
+Los mismos comandos aparecen como botones dentro de la UI. Cada ejecución atraviesa Boss y genera una notificación visible.
 
-El comando `open` es `tracked`.
+## Tray
 
-Boss puede seguir y detener el proceso tracked sin conocer que internamente el módulo usa Python y Tkinter.
+El manifest declara el tray nativo de Boss con protocolo 1. Boss administra el ciclo de vida del provider.
 
-### Launcher
+Al abrir el tray del módulo, el provider muestra una UI mínima con:
 
-Sólo el comando `open` declara `launcher: true`.
+- Opción 1 ON/OFF;
+- Opción 2 ON/OFF;
+- Botón de prueba.
 
-Un módulo Schema 3 puede tener como máximo una acción de launcher.
-
-### Idiomas
-
-El módulo mantiene su propio `languages/manifest.json` y sus propios archivos de traducción.
-
-Idiomas incluidos:
-
-- `es_CL`
-- `en_US`
-
-Si Boss entrega `NEEBLES_LANGUAGE`, ese valor es autoritativo.
-
-Un `NEEBLES_LANGUAGE` explícito vacío o no soportado es un error.
-
-Si Boss no entrega idioma, el módulo puede descubrir el locale del sistema.
-
-Si el locale del sistema no está soportado, se usa `languages/manifest.json.default`.
-
-### Identidad
-
-Boss entrega `NEEBLES_MODULE`.
-
-Si la variable está definida, debe coincidir exactamente con el nombre declarado por el manifest.
-
-Una identidad explícita vacía o distinta es un error.
-
-### Notificaciones
-
-El módulo declara `notifications.protocol = 1`.
-
-El módulo posee y traduce `title` y `message`.
-
-Boss sólo gobierna transporte, severidad, configuración global e identidad.
-
-### Dependencias
-
-Las dependencias del sistema se declaran en el manifest.
-
-Boss resuelve e instala esas dependencias sin conocer la implementación interna del módulo.
+Cada interacción genera una notificación y publica el estado actualizado al Tray Manager.
 
 ## Regla arquitectónica
 
-Agregar una tecnología interna nueva al módulo no debe requerir modificar Boss.
+Boss conoce contratos, identidad, lifecycle y transporte. El módulo conoce su implementación interna.
 
-Comportamiento nuevo = código nuevo.
-
-Conocimiento nuevo = datos nuevos.
+Cambiar Python por Rust, Go, Node.js, C++ u otro lenguaje no debe requerir modificar Boss mientras se mantengan los mismos contratos y protocolos.
