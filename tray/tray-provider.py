@@ -14,6 +14,7 @@ MODULE = os.environ.get("NEEBLES_MODULE", "test-module").strip() or "test-module
 TRAY_ID = MODULE
 PROTOCOL = 1
 SOCKET_PATH = Path(os.environ.get("NEEBLES_TRAY_SOCKET", f"/run/user/{os.geteuid()}/neebles/tray.sock"))
+BOSS_SOCKET_PATH = Path(os.environ.get("NEEBLES_SOCKET", "/run/neebles/neebles.sock"))
 EVENTS = queue.Queue()
 STOP = threading.Event()
 WRITE_LOCK = threading.Lock()
@@ -30,6 +31,83 @@ def notify(message):
         ["neebles", "notify", "success", "N.E.E.B.L.E.S. Test Module", message],
         check=False,
         stdin=subprocess.DEVNULL,
+    )
+
+
+def boss_request(action, args):
+    request = {
+        "target": "settings",
+        "action": action,
+        "args": args,
+        "context": {
+            "caller": MODULE,
+        },
+    }
+
+    payload = json.dumps(
+        request,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
+
+    stream = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+
+    try:
+        stream.connect(str(BOSS_SOCKET_PATH))
+        stream.sendall(payload)
+        stream.shutdown(socket.SHUT_WR)
+
+        chunks = []
+
+        while True:
+            chunk = stream.recv(65536)
+
+            if not chunk:
+                break
+
+            chunks.append(chunk)
+    finally:
+        stream.close()
+
+    if not chunks:
+        raise RuntimeError("Boss returned an empty settings response")
+
+    response = json.loads(b"".join(chunks).decode("utf-8"))
+
+    if not response.get("ok", False):
+        error = response.get("error") or {}
+        raise RuntimeError(
+            error.get(
+                "message",
+                "unknown Boss settings error",
+            )
+        )
+
+    return response.get("result")
+
+
+def settings_get(path):
+    return boss_request(
+        "get",
+        [
+            MODULE,
+            path,
+        ],
+    )
+
+
+def settings_set(path, value):
+    return boss_request(
+        "set",
+        [
+            MODULE,
+            path,
+            json.dumps(
+                value,
+                ensure_ascii=False,
+                separators=(",", ":"),
+            ),
+        ],
     )
 
 
@@ -85,8 +163,17 @@ def main():
     root.geometry("360x220")
     root.withdraw()
 
-    option1 = tk.BooleanVar(value=False)
-    option2 = tk.BooleanVar(value=False)
+    initial_option1 = settings_get("tray.option1")
+    initial_option2 = settings_get("tray.option2")
+
+    if not isinstance(initial_option1, bool):
+        raise RuntimeError("tray.option1 is not boolean")
+
+    if not isinstance(initial_option2, bool):
+        raise RuntimeError("tray.option2 is not boolean")
+
+    option1 = tk.BooleanVar(value=initial_option1)
+    option2 = tk.BooleanVar(value=initial_option2)
 
     def publish_state(opened=None):
         send_line(
@@ -105,11 +192,31 @@ def main():
         )
 
     def toggle1():
-        notify("Opción 1 encendida" if option1.get() else "Opción 1 apagada")
+        value = bool(option1.get())
+
+        try:
+            settings_set("tray.option1", value)
+        except Exception as error:
+            option1.set(not value)
+            notify(f"No se pudo guardar Opción 1: {error}")
+            publish_state(True)
+            return
+
+        notify("Opción 1 encendida" if value else "Opción 1 apagada")
         publish_state(True)
 
     def toggle2():
-        notify("Opción 2 encendida" if option2.get() else "Opción 2 apagada")
+        value = bool(option2.get())
+
+        try:
+            settings_set("tray.option2", value)
+        except Exception as error:
+            option2.set(not value)
+            notify(f"No se pudo guardar Opción 2: {error}")
+            publish_state(True)
+            return
+
+        notify("Opción 2 encendida" if value else "Opción 2 apagada")
         publish_state(True)
 
     tk.Checkbutton(root, text="Opción 1", variable=option1, command=toggle1).pack(anchor="w", padx=30, pady=(30, 8))

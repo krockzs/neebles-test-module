@@ -3,6 +3,7 @@
   "name": "test-module",
   "version": "1.1.0",
   "entrypoint": "test-module.sh",
+  "settings": "settings/default.json",
   "contracts": [
     {
       "type": "commands",
