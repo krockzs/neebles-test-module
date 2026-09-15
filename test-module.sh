@@ -34,8 +34,9 @@ run_child() {
 }
 
 if [[ "${NEEBLES_CALLER:-}" == "tray-manager" ]]; then
-    run_child python3 "$MODULE_DIR/tray/tray-provider.py"
-    exit $?
+    exec python3 \
+        "$MODULE_DIR/tray/tray-provider.py" \
+        "$MODULE_DIR/test-module.sh"
 fi
 
 command="${1:-default}"
