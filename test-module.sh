@@ -7,70 +7,61 @@ MODULE_DIR="$(
     pwd
 )"
 
+run_child() {
+    local child_pid=""
+
+    stop_child() {
+        if [[ -n "$child_pid" ]]; then
+            kill -TERM "$child_pid" 2>/dev/null || true
+            wait "$child_pid" 2>/dev/null || true
+        fi
+    }
+
+    trap stop_child TERM INT EXIT
+
+    "$@" &
+    child_pid=$!
+
+    set +e
+    wait "$child_pid"
+    local status=$?
+    set -e
+
+    child_pid=""
+    trap - TERM INT EXIT
+
+    return "$status"
+}
+
+if [[ "${NEEBLES_CALLER:-}" == "tray-manager" ]]; then
+    run_child python3 "$MODULE_DIR/tray/tray-provider.py"
+    exit $?
+fi
+
 command="${1:-default}"
 
 case "$command" in
     open)
-        child_pid=""
-
-        stop_child() {
-            if [[ -n "$child_pid" ]]; then
-                kill -TERM "$child_pid" 2>/dev/null || true
-                wait "$child_pid" 2>/dev/null || true
-            fi
-        }
-
-        trap stop_child TERM INT
-
-        python3 \
-            "$MODULE_DIR/test-module-gui.py" &
-
-        child_pid=$!
-
-        set +e
-        wait "$child_pid"
-        status=$?
-        set -e
-
-        child_pid=""
-
-        exit "$status"
-        ;;
-
-    notify)
-        notification_json="$(
-            python3 \
-                "$MODULE_DIR/test-module-gui.py" \
-                --notification-text
-        )"
-
-        title="$(
-            python3 -c \
-                'import json,sys; print(json.load(sys.stdin)["title"])' \
-                <<< "$notification_json"
-        )"
-
-        message="$(
-            python3 -c \
-                'import json,sys; print(json.load(sys.stdin)["message"])' \
-                <<< "$notification_json"
-        )"
-
-        exec neebles \
-            notify \
-            success \
-            "$title" \
-            "$message"
+        run_child python3 "$MODULE_DIR/runtime.py"
+        exit $?
         ;;
 
     default)
-        exec python3 \
-            "$MODULE_DIR/test-module-gui.py" \
-            --print-info
+        python3 - "$MODULE_DIR/manifest.json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as handle:
+    manifest = json.load(handle)
+
+print(f"N.E.E.B.L.E.S. Test Module {manifest['version']}")
+print("Use: neebles test-module open")
+PY
         ;;
 
     *)
-        echo "Unknown module command: $command" >&2
+        echo "Unknown legacy module command: $command" >&2
+        echo "Open the module first, then use the dynamic contract commands." >&2
         exit 2
         ;;
 esac
