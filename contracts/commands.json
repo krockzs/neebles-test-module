@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "contract": "commands",
+  "endpoints": {
+    "version": {
+      "endpoint": "test.version",
+      "lifecycle": "runtime",
+      "state_mode": "preserve",
+      "requires_root": false,
+      "launcher": false
+    },
+    "hello": {
+      "endpoint": "test.hello",
+      "lifecycle": "runtime",
+      "state_mode": "preserve",
+      "requires_root": false,
+      "launcher": false
+    },
+    "notify": {
+      "endpoint": "test.notify",
+      "lifecycle": "runtime",
+      "state_mode": "preserve",
+      "requires_root": false,
+      "launcher": false
+    },
+    "state": {
+      "endpoint": "test.state",
+      "lifecycle": "runtime",
+      "state_mode": "preserve",
+      "requires_root": false,
+      "launcher": false
+    }
+  }
+}
