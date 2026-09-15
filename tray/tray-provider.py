@@ -14,7 +14,6 @@ MODULE = os.environ.get("NEEBLES_MODULE", "test-module").strip() or "test-module
 TRAY_ID = MODULE
 PROTOCOL = 1
 SOCKET_PATH = Path(os.environ.get("NEEBLES_TRAY_SOCKET", f"/run/user/{os.geteuid()}/neebles/tray.sock"))
-BOSS_SOCKET_PATH = Path(os.environ.get("NEEBLES_SOCKET", "/run/neebles/neebles.sock"))
 EVENTS = queue.Queue()
 STOP = threading.Event()
 WRITE_LOCK = threading.Lock()
@@ -34,80 +33,89 @@ def notify(message):
     )
 
 
-def boss_request(action, args):
-    request = {
-        "target": "settings",
-        "action": action,
-        "args": args,
-        "context": {
-            "caller": MODULE,
-        },
-    }
-
-    payload = json.dumps(
-        request,
-        ensure_ascii=False,
-        separators=(",", ":"),
-    ).encode("utf-8")
-
-    stream = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+def tray_settings_request(message):
+    stream = socket.socket(
+        socket.AF_UNIX,
+        socket.SOCK_STREAM
+    )
 
     try:
-        stream.connect(str(BOSS_SOCKET_PATH))
+        stream.connect(
+            str(SOCKET_PATH)
+        )
+
+        payload = (
+            json.dumps(
+                message,
+                ensure_ascii=False,
+                separators=(",", ":")
+            )
+            + "\n"
+        ).encode("utf-8")
+
         stream.sendall(payload)
         stream.shutdown(socket.SHUT_WR)
 
-        chunks = []
+        file = stream.makefile(
+            "r",
+            encoding="utf-8"
+        )
 
-        while True:
-            chunk = stream.recv(65536)
+        try:
+            line = file.readline()
+        finally:
+            file.close()
 
-            if not chunk:
-                break
-
-            chunks.append(chunk)
     finally:
         stream.close()
 
-    if not chunks:
-        raise RuntimeError("Boss returned an empty settings response")
-
-    response = json.loads(b"".join(chunks).decode("utf-8"))
-
-    if not response.get("ok", False):
-        error = response.get("error") or {}
+    if not line:
         raise RuntimeError(
-            error.get(
+            "Tray Manager returned an empty settings response"
+        )
+
+    response = json.loads(line)
+
+    if response.get("type") == "error":
+        raise RuntimeError(
+            response.get(
                 "message",
-                "unknown Boss settings error",
+                "unknown tray settings error"
             )
         )
 
-    return response.get("result")
+    if response.get("type") != "settings_value":
+        raise RuntimeError(
+            "unexpected tray settings response: "
+            f"{response.get('type')}"
+        )
+
+    if response.get("owner_module") != MODULE:
+        raise RuntimeError(
+            "tray settings response owner mismatch"
+        )
+
+    return response.get("value")
 
 
 def settings_get(path):
-    return boss_request(
-        "get",
-        [
-            MODULE,
-            path,
-        ],
+    return tray_settings_request(
+        {
+            "type": "settings_get",
+            "owner_module": MODULE,
+            "path": path,
+        }
     )
 
 
 def settings_set(path, value):
-    return boss_request(
-        "set",
-        [
-            MODULE,
-            path,
-            json.dumps(
-                value,
-                ensure_ascii=False,
-                separators=(",", ":"),
-            ),
-        ],
+    return tray_settings_request(
+        {
+            "type": "settings_set",
+            "owner_module": MODULE,
+            "path": path,
+            "value": value,
+        }
     )
 
 
