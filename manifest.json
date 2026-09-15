@@ -1,8 +1,16 @@
 {
   "schema": 3,
   "name": "test-module",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "entrypoint": "test-module.sh",
+  "contracts": [
+    {
+      "type": "commands",
+      "file": "contracts/commands.json",
+      "schema": 1,
+      "enabled": true
+    }
+  ],
   "dependencies": {
     "system": [
       {
@@ -58,12 +66,12 @@
       "requires_root": false,
       "lifecycle": "tracked",
       "launcher": true
-    },
-    "notify": {
-      "requires_root": false,
-      "lifecycle": "oneshot",
-      "launcher": false
     }
+  },
+  "tray": {
+    "protocol": 1,
+    "icon": "icon.jpeg",
+    "provider": "test-module.sh"
   },
   "notifications": {
     "protocol": 1
