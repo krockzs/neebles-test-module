@@ -171,14 +171,8 @@ def main():
     root.geometry("360x220")
     root.withdraw()
 
-    initial_option1 = settings_get("tray.option1")
-    initial_option2 = settings_get("tray.option2")
-
-    if not isinstance(initial_option1, bool):
-        raise RuntimeError("tray.option1 is not boolean")
-
-    if not isinstance(initial_option2, bool):
-        raise RuntimeError("tray.option2 is not boolean")
+    initial_option1 = settings_get("tray.option1") == "true"
+    initial_option2 = settings_get("tray.option2") == "true"
 
     option1 = tk.BooleanVar(value=initial_option1)
     option2 = tk.BooleanVar(value=initial_option2)
@@ -203,7 +197,10 @@ def main():
         value = bool(option1.get())
 
         try:
-            settings_set("tray.option1", value)
+            settings_set(
+                "tray.option1",
+                "true" if value else "false",
+            )
         except Exception as error:
             option1.set(not value)
             notify(f"No se pudo guardar Opción 1: {error}")
@@ -217,7 +214,10 @@ def main():
         value = bool(option2.get())
 
         try:
-            settings_set("tray.option2", value)
+            settings_set(
+                "tray.option2",
+                "true" if value else "false",
+            )
         except Exception as error:
             option2.set(not value)
             notify(f"No se pudo guardar Opción 2: {error}")
