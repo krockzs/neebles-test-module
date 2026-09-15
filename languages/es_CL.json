@@ -1,8 +1,12 @@
 {
-  "app.title": "Módulo de Referencia N.E.E.B.L.E.S. %1",
-  "app.heading": "Módulo de referencia N.E.E.B.L.E.S.",
-  "app.subtitle": "Contrato canónico Schema 3",
-  "cli.info": "Módulo de Referencia N.E.E.B.L.E.S. %1",
-  "notification.title": "Módulo de referencia",
-  "notification.message": "La notificación fue generada por el módulo."
+  "app.title": "N.E.E.B.L.E.S. Test Module",
+  "app.heading": "N.E.E.B.L.E.S. Test Module",
+  "app.subtitle": "Pruebas de contratos dinámicos por Boss",
+  "ui.execute": "Ejecutar",
+  "runtime.hello": "Hola desde test-module",
+  "notification.title": "N.E.E.B.L.E.S. Test Module",
+  "notification.command.version": "Comando version ejecutado",
+  "notification.command.hello": "Comando hello ejecutado",
+  "notification.command.notify": "Comando notify ejecutado",
+  "notification.command.state": "Comando state ejecutado"
 }
