@@ -7,11 +7,9 @@ import signal
 import socket
 import subprocess
 import threading
-import time
 import tkinter as tk
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
 MODULE = os.environ.get("NEEBLES_MODULE", "test-module").strip() or "test-module"
 TRAY_ID = MODULE
 PROTOCOL = 1
@@ -35,8 +33,7 @@ def notify(message):
     )
 
 
-def reader(stream):
-    file = stream.makefile("r", encoding="utf-8")
+def reader(file):
     try:
         while not STOP.is_set():
             line = file.readline()
@@ -59,6 +56,7 @@ def heartbeat(stream):
 def main():
     stream = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     stream.connect(str(SOCKET_PATH))
+    file = stream.makefile("r", encoding="utf-8")
 
     send_line(
         stream,
@@ -71,12 +69,15 @@ def main():
         },
     )
 
-    first = json.loads(stream.makefile("r", encoding="utf-8").readline())
+    line = file.readline()
+    if not line:
+        raise RuntimeError("tray manager closed during registration")
+
+    first = json.loads(line)
     if first.get("type") != "ack" or first.get("event") != "register":
         raise RuntimeError(f"tray registration failed: {first}")
 
-    # Re-open a reader after registration acknowledgement.
-    threading.Thread(target=reader, args=(stream,), daemon=True).start()
+    threading.Thread(target=reader, args=(file,), daemon=True).start()
     threading.Thread(target=heartbeat, args=(stream,), daemon=True).start()
 
     root = tk.Tk()
@@ -166,6 +167,11 @@ def main():
     root.after(150, process_events)
     root.mainloop()
     STOP.set()
+
+    try:
+        file.close()
+    except OSError:
+        pass
     try:
         stream.close()
     except OSError:
