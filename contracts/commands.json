@@ -29,6 +29,34 @@
       "state_mode": "preserve",
       "requires_root": false,
       "launcher": false
+    },
+    "settings": {
+      "endpoint": "test.settings",
+      "lifecycle": "runtime",
+      "state_mode": "preserve",
+      "requires_root": false,
+      "launcher": false
+    },
+    "toggle": {
+      "endpoint": "test.toggle",
+      "lifecycle": "runtime",
+      "state_mode": "preserve",
+      "requires_root": false,
+      "launcher": false
+    },
+    "events": {
+      "endpoint": "test.events",
+      "lifecycle": "runtime",
+      "state_mode": "preserve",
+      "requires_root": false,
+      "launcher": false
+    },
+    "external": {
+      "endpoint": "test.external",
+      "lifecycle": "runtime",
+      "state_mode": "preserve",
+      "requires_root": false,
+      "launcher": false
     }
   }
 }

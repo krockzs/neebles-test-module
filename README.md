@@ -75,3 +75,55 @@ Cada interacción genera una notificación y publica el estado actualizado al Tr
 Boss conoce contratos, identidad, lifecycle y transporte. El módulo conoce su implementación interna.
 
 Cambiar Python por Rust, Go, Node.js, C++ u otro lenguaje no debe requerir modificar Boss mientras se mantengan los mismos contratos y protocolos.
+
+
+## Contrato final Boss 1.0.7
+
+Desde la versión 1.2.0, el módulo de prueba valida también los contratos persistentes actuales de Boss.
+
+Al registrarse, el runtime declara los endpoints cargados desde `contracts/commands.json` y se suscribe a:
+
+- `module.lifecycle`
+- `settings.test-module`
+
+La suscripción de settings pertenece exclusivamente al propio módulo. Boss conserva la autoridad sobre el aislamiento entre módulos.
+
+### Settings IPC
+
+El runtime usa directamente el protocolo persistente de módulos para leer y escribir settings:
+
+neebles test-module settings
+neebles test-module toggle
+
+`settings` lee `tray.option1` y `tray.option2` mediante `SettingsGet`.
+
+`toggle` lee y modifica `tray.option1` mediante `SettingsGet` + `SettingsSet`. La persistencia pertenece a Boss y el cambio genera el evento `settings.test-module / changed`.
+
+### Eventos
+
+neebles test-module events
+
+Devuelve los eventos recibidos por el runtime desde las suscripciones activas.
+
+El runtime mantiene sólo un historial acotado de diagnóstico en memoria. No crea una segunda fuente persistente de estado.
+
+### External
+
+neebles test-module external
+
+Genera deliberadamente un error de runtime sin `id` para comprobar la ruta Module IPC -> Boss -> External.
+
+El módulo sólo produce el evento. No decide si puede atravesar la frontera External.
+
+La autoridad global sigue perteneciendo a `telemetry.enabled` en Boss:
+
+- Telemetry OFF: Boss bloquea la transmisión External.
+- Telemetry ON: Boss permite que el evento alcance la frontera External configurada.
+
+El módulo nunca puede activar Telemetry por sí mismo.
+
+### Descubrimiento dinámico
+
+La UI obtiene la lista visible de comandos desde `contracts/commands.json`.
+
+Agregar o retirar un endpoint del contrato ya no requiere mantener una segunda lista manual dentro de la UI.

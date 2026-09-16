@@ -8,5 +8,8 @@
   "notification.command.version": "Comando version ejecutado",
   "notification.command.hello": "Comando hello ejecutado",
   "notification.command.notify": "Comando notify ejecutado",
-  "notification.command.state": "Comando state ejecutado"
+  "notification.command.state": "Comando state ejecutado",
+  "notification.command.settings": "Configuración leída mediante Boss",
+  "notification.command.toggle": "Configuración modificada mediante Boss",
+  "notification.command.external": "Evento de diagnóstico External emitido"
 }

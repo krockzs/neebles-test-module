@@ -8,6 +8,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 LANGUAGE_MANIFEST = BASE_DIR / "languages" / "manifest.json"
+COMMANDS_CONTRACT = BASE_DIR / "contracts" / "commands.json"
 
 
 def load_json(path):
@@ -24,7 +25,7 @@ def load_strings():
 
 
 STRINGS = load_strings()
-COMMANDS = ["version", "hello", "notify", "state"]
+COMMANDS = list(load_json(COMMANDS_CONTRACT)["endpoints"].keys())
 
 root = tk.Tk()
 root.title(STRINGS.get("app.title", "N.E.E.B.L.E.S. Test Module"))
