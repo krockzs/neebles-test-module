@@ -2,9 +2,9 @@
   "hardcoded": {
     "module": "test-module"
   },
-  "tray": {
+  "ui": {},
+  "features": {
     "option1": "false",
     "option2": "false"
-  },
-  "ui": {}
+  }
 }

@@ -13,5 +13,8 @@
   "notification.command.toggle": "Setting changed through Boss",
   "notification.command.external": "External diagnostic event emitted",
   "surface.open": "Open",
-  "surface.active": "Active"
+  "surface.active": "Active",
+  "features.title": "Module Features",
+  "features.option1": "Feature Option 1",
+  "features.option2": "Feature Option 2"
 }

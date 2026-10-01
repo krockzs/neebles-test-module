@@ -172,8 +172,8 @@ def main():
     root.geometry("360x220")
     root.withdraw()
 
-    initial_option1 = settings_get("tray.option1") == "true"
-    initial_option2 = settings_get("tray.option2") == "true"
+    initial_option1 = settings_get("features.option1") == "true"
+    initial_option2 = settings_get("features.option2") == "true"
 
     option1 = tk.BooleanVar(value=initial_option1)
     option2 = tk.BooleanVar(value=initial_option2)
@@ -199,7 +199,7 @@ def main():
 
         try:
             settings_set(
-                "tray.option1",
+                "features.option1",
                 "true" if value else "false",
             )
         except Exception as error:
@@ -216,7 +216,7 @@ def main():
 
         try:
             settings_set(
-                "tray.option2",
+                "features.option2",
                 "true" if value else "false",
             )
         except Exception as error:
@@ -260,8 +260,42 @@ def main():
             elif kind == "resize":
                 root.geometry(f"{int(message['width'])}x{int(message['height'])}")
                 publish_state(True)
+            elif kind == "settings_changed":
+                if message.get("owner_module") != MODULE:
+                    continue
+
+                path = message.get("path")
+                value = message.get("value")
+
+                if path == "features.option1":
+                    option1.set(value == "true")
+
+                elif path == "features.option2":
+                    option2.set(value == "true")
+
+                else:
+                    continue
+
+                publish_state(
+                    root.state() != "withdrawn"
+                )
+
             elif kind == "reload":
-                publish_state(root.state() != "withdrawn")
+                option1.set(
+                    settings_get(
+                        "features.option1"
+                    ) == "true"
+                )
+
+                option2.set(
+                    settings_get(
+                        "features.option2"
+                    ) == "true"
+                )
+
+                publish_state(
+                    root.state() != "withdrawn"
+                )
 
         if STOP.is_set():
             try:

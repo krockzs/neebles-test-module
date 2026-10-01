@@ -90,10 +90,7 @@ def notify(
             "module": MODULE,
             "session_id": session_id,
             "severity": "success",
-            "icon": str(
-                BASE_DIR
-                / "icon.jpeg"
-            ),
+            "icon": "icon.jpeg",
             "title": text.get(
                 "notification.title",
                 "N.E.E.B.L.E.S. Test Module",
@@ -224,6 +221,36 @@ def record_event(message):
     )
 
 
+def push_ui_message(message):
+    global UI_PROCESS
+
+    if (
+        UI_PROCESS is None
+        or UI_PROCESS.poll() is not None
+        or UI_PROCESS.stdin is None
+    ):
+        return
+
+    try:
+        UI_PROCESS.stdin.write(
+            json.dumps(
+                message,
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
+            + "\n"
+        )
+
+        UI_PROCESS.stdin.flush()
+
+    except (
+        BrokenPipeError,
+        OSError,
+        ValueError,
+    ):
+        pass
+
+
 def pong(stream, session_id):
     write_message(
         stream,
@@ -248,6 +275,38 @@ def handle_control_message(stream, session_id, message):
     if message_type == "event":
         validate_identity(message, session_id)
         record_event(message)
+
+        if (
+            message.get("topic")
+            == f"settings.{MODULE}"
+            and message.get("event")
+            == "changed"
+        ):
+            payload = message.get(
+                "payload",
+                {},
+            )
+
+            path = payload.get("path")
+            value = payload.get("value")
+
+            if (
+                isinstance(path, str)
+                and isinstance(value, str)
+            ):
+                push_ui_message(
+                    {
+                        "type":
+                            "settings_changed",
+
+                        "path":
+                            path,
+
+                        "value":
+                            value,
+                    }
+                )
+
         return True
 
     if message_type == "shutdown":
@@ -426,6 +485,27 @@ def execute_endpoint(
         if not already_open:
             UI_PROCESS = launch_ui()
 
+            for setting_path in (
+                "features.option1",
+                "features.option2",
+            ):
+                push_ui_message(
+                    {
+                        "type":
+                            "settings_changed",
+
+                        "path":
+                            setting_path,
+
+                        "value":
+                            settings_get(
+                                stream,
+                                session_id,
+                                setting_path,
+                            ),
+                    }
+                )
+
         return response(
             message,
             {
@@ -521,13 +601,13 @@ def execute_endpoint(
         option1 = settings_get(
             stream,
             session_id,
-            "tray.option1",
+            "features.option1",
         )
 
         option2 = settings_get(
             stream,
             session_id,
-            "tray.option2",
+            "features.option2",
         )
 
         notify(
@@ -544,8 +624,98 @@ def execute_endpoint(
         return response(
             message,
             {
-                "tray.option1": option1,
-                "tray.option2": option2,
+                "features.option1": option1,
+                "features.option2": option2,
+            },
+        )
+
+    if endpoint == "test.setting":
+        args = message.get(
+            "args",
+            [],
+        )
+
+        if len(args) != 2:
+            return response(
+                message,
+                ok=False,
+                code=2,
+                error={
+                    "kind":
+                        "invalid_setting_arguments",
+
+                    "message":
+                        "setting requires path and value",
+
+                    "details":
+                        None,
+                },
+            )
+
+        path, requested = args
+
+        allowed = {
+            "features.option1",
+            "features.option2",
+        }
+
+        if path not in allowed:
+            return response(
+                message,
+                ok=False,
+                code=2,
+                error={
+                    "kind":
+                        "unknown_setting",
+
+                    "message":
+                        "unsupported test-module setting: "
+                        + path,
+
+                    "details":
+                        None,
+                },
+            )
+
+        if requested not in {
+            "true",
+            "false",
+        }:
+            return response(
+                message,
+                ok=False,
+                code=2,
+                error={
+                    "kind":
+                        "invalid_setting_value",
+
+                    "message":
+                        "setting value must be true or false",
+
+                    "details":
+                        None,
+                },
+            )
+
+        previous = settings_get(
+            stream,
+            session_id,
+            path,
+        )
+
+        persisted = settings_set(
+            stream,
+            session_id,
+            path,
+            requested,
+        )
+
+        return response(
+            message,
+            {
+                "path": path,
+                "previous": previous,
+                "value": persisted,
             },
         )
 
@@ -553,7 +723,7 @@ def execute_endpoint(
         previous = settings_get(
             stream,
             session_id,
-            "tray.option1",
+            "features.option1",
         )
 
         next_value = (
@@ -565,7 +735,7 @@ def execute_endpoint(
         persisted = settings_set(
             stream,
             session_id,
-            "tray.option1",
+            "features.option1",
             next_value,
         )
 
@@ -583,7 +753,7 @@ def execute_endpoint(
         return response(
             message,
             {
-                "path": "tray.option1",
+                "path": "features.option1",
                 "previous": previous,
                 "value": persisted,
             },
@@ -669,6 +839,9 @@ def launch_ui():
         ],
         cwd=BASE_DIR,
         env=os.environ.copy(),
+        stdin=subprocess.PIPE,
+        text=True,
+        bufsize=1,
     )
 
 

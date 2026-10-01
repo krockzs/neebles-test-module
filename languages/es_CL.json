@@ -13,5 +13,8 @@
   "notification.command.toggle": "Configuración modificada mediante Boss",
   "notification.command.external": "Evento de diagnóstico External emitido",
   "surface.open": "Abrir",
-  "surface.active": "Activo"
+  "surface.active": "Activo",
+  "features.title": "Funciones del módulo",
+  "features.option1": "Función de prueba 1",
+  "features.option2": "Función de prueba 2"
 }
