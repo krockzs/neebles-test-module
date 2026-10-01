@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "items": {
+    "open.launcher": {
+      "surface": "launcher",
+      "visible": true,
+      "data": {
+        "control": "button",
+        "action": "open",
+        "label_key": "surface.open"
+      }
+    },
+    "main.ui": {
+      "surface": "ui",
+      "object_id": "main",
+      "visible": true,
+      "data": {
+        "control": "switch",
+        "action_on": "activate",
+        "action_off": "deactivate",
+        "transition_on": "activate",
+        "transition_off": "deactivate",
+        "label_key": "surface.active"
+      }
+    }
+  }
+}

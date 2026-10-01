@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3.13
 
 import json
 import os
@@ -9,6 +9,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 LANGUAGE_MANIFEST = BASE_DIR / "languages" / "manifest.json"
 COMMANDS_CONTRACT = BASE_DIR / "contracts" / "commands.json"
+BOSS_CLI = Path("/usr/local/bin/neebles")
 
 
 def load_json(path):
@@ -25,7 +26,18 @@ def load_strings():
 
 
 STRINGS = load_strings()
-COMMANDS = list(load_json(COMMANDS_CONTRACT)["endpoints"].keys())
+
+COMMANDS = [
+    name
+    for name, definition
+    in load_json(
+        COMMANDS_CONTRACT
+    )["endpoints"].items()
+    if definition.get(
+        "launcher"
+    ) is not True
+]
+
 
 root = tk.Tk()
 root.title(STRINGS.get("app.title", "N.E.E.B.L.E.S. Test Module"))
@@ -44,19 +56,47 @@ result.pack(side="bottom", fill="both", expand=True, padx=20, pady=20)
 
 def run_command(command):
     completed = subprocess.run(
-        ["neebles", "test-module", command],
+        [
+            str(BOSS_CLI),
+            "test-module",
+            command,
+        ],
         cwd=BASE_DIR,
         text=True,
         capture_output=True,
         check=False,
     )
-    result.delete("1.0", "end")
-    result.insert("end", f"$ neebles test-module {command}\n\n")
+
+    result.delete(
+        "1.0",
+        "end",
+    )
+
+    result.insert(
+        "end",
+        "neebles test-module "
+        + command
+        + "\n\n",
+    )
+
     if completed.stdout:
-        result.insert("end", completed.stdout)
+        result.insert(
+            "end",
+            completed.stdout,
+        )
+
     if completed.stderr:
-        result.insert("end", completed.stderr)
-    result.insert("end", f"\nexit_code={completed.returncode}\n")
+        result.insert(
+            "end",
+            completed.stderr,
+        )
+
+    result.insert(
+        "end",
+        "\nexit_code="
+        + str(completed.returncode)
+        + "\n",
+    )
 
 
 for command in COMMANDS:

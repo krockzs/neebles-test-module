@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3.13
 
 import collections
 import json
@@ -73,25 +73,72 @@ def strings():
     return load_json(language_file())
 
 
-def notify(message):
+def notify(
+    stream,
+    session_id,
+    message,
+):
+    request_id = str(uuid.uuid4())
+
     text = strings()
 
-    title = text.get(
-        "notification.title",
-        "N.E.E.B.L.E.S. Test Module",
+    write_message(
+        stream,
+        {
+            "type": "default_notification",
+            "id": request_id,
+            "module": MODULE,
+            "session_id": session_id,
+            "severity": "success",
+            "icon": str(
+                BASE_DIR
+                / "icon.jpeg"
+            ),
+            "title": text.get(
+                "notification.title",
+                "N.E.E.B.L.E.S. Test Module",
+            ),
+            "message": message,
+            "expire_timeout_ms": None,
+            "replace_id": None,
+        },
     )
 
-    subprocess.run(
-        [
-            "neebles",
-            "notify",
-            "success",
-            title,
-            message,
-        ],
-        check=False,
-        stdin=subprocess.DEVNULL,
+    result = wait_for(
+        stream,
+        session_id,
+        lambda message: (
+            message.get("id") == request_id
+            and message.get("type")
+            in {
+                "notification_ack",
+                "error",
+            }
+        ),
     )
+
+    if result["type"] == "error":
+        error = result.get(
+            "error",
+            {},
+        )
+
+        raise RuntimeError(
+            error.get(
+                "message",
+                "Boss notification failed",
+            )
+        )
+
+    validate_identity(
+        result,
+        session_id,
+    )
+
+    return result.get(
+        "notification_id"
+    )
+
 
 
 def declared_endpoints():
@@ -363,13 +410,39 @@ def execute_endpoint(
     session_id,
     message,
 ):
+    global UI_PROCESS
+
     endpoint = message.get("endpoint", "")
 
     manifest = load_json(MANIFEST_PATH)
     text = strings()
 
+    if endpoint == "ui.open":
+        already_open = (
+            UI_PROCESS is not None
+            and UI_PROCESS.poll() is None
+        )
+
+        if not already_open:
+            UI_PROCESS = launch_ui()
+
+        return response(
+            message,
+            {
+                "opened": True,
+                "already_open": already_open,
+                "pid": (
+                    UI_PROCESS.pid
+                    if UI_PROCESS is not None
+                    else None
+                ),
+            },
+        )
+
     if endpoint == "test.version":
         notify(
+            stream,
+            session_id,
             text.get(
                 "notification.command.version",
                 "Command version executed",
@@ -385,6 +458,8 @@ def execute_endpoint(
 
     if endpoint == "test.hello":
         notify(
+            stream,
+            session_id,
             text.get(
                 "notification.command.hello",
                 "Command hello executed",
@@ -403,6 +478,8 @@ def execute_endpoint(
 
     if endpoint == "test.notify":
         notify(
+            stream,
+            session_id,
             text.get(
                 "notification.command.notify",
                 "Notification command executed",
@@ -418,6 +495,8 @@ def execute_endpoint(
 
     if endpoint == "test.state":
         notify(
+            stream,
+            session_id,
             text.get(
                 "notification.command.state",
                 "Command state executed",
@@ -452,6 +531,10 @@ def execute_endpoint(
         )
 
         notify(
+
+            stream,
+
+            session_id,
             text.get(
                 "notification.command.settings",
                 "Settings read through Boss",
@@ -487,6 +570,10 @@ def execute_endpoint(
         )
 
         notify(
+
+            stream,
+
+            session_id,
             text.get(
                 "notification.command.toggle",
                 "Setting changed through Boss",
@@ -532,6 +619,10 @@ def execute_endpoint(
         )
 
         notify(
+
+            stream,
+
+            session_id,
             text.get(
                 "notification.command.external",
                 "External diagnostic event emitted",
@@ -715,15 +806,13 @@ def main():
         session_id,
     )
 
-    UI_PROCESS = launch_ui()
-
     try:
         while not STOP:
             if (
                 UI_PROCESS is not None
                 and UI_PROCESS.poll() is not None
             ):
-                break
+                UI_PROCESS = None
 
             message = next_runtime_message(
                 stream
@@ -776,7 +865,7 @@ def main():
                     "type": "unregister",
                     "module": MODULE,
                     "session_id": session_id,
-                    "reason": "ui_closed",
+                    "reason": "runtime_exit",
                 },
             )
 

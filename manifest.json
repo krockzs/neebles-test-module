@@ -1,9 +1,10 @@
 {
-  "schema": 3,
+  "schema": 4,
   "name": "test-module",
   "version": "1.2.0",
-  "entrypoint": "test-module.sh",
-  "settings": "settings/default.json",
+  "entrypoint": "runtime.py",
+  "lifecycle": "lifecycle.json",
+  "surfaces": "surfaces.json",
   "contracts": [
     {
       "type": "commands",
@@ -12,69 +13,13 @@
       "enabled": true
     }
   ],
-  "dependencies": {
-    "system": [
-      {
-        "name": "python3",
-        "install": {
-          "installer": "apt",
-          "operation": "install",
-          "variables": {
-            "packages": [
-              "python3"
-            ]
-          }
-        },
-        "verify": {
-          "installer": "dpkg-query",
-          "operation": "check_installed",
-          "variables": {
-            "package": "python3"
-          }
-        },
-        "required": true
-      },
-      {
-        "name": "python3-tk",
-        "install": {
-          "installer": "apt",
-          "operation": "install",
-          "variables": {
-            "packages": [
-              "python3-tk"
-            ]
-          }
-        },
-        "verify": {
-          "installer": "dpkg-query",
-          "operation": "check_installed",
-          "variables": {
-            "package": "python3-tk"
-          }
-        },
-        "required": true
-      }
-    ],
-    "modules": []
-  },
-  "commands": {
-    "default": {
-      "requires_root": false,
-      "lifecycle": "oneshot",
-      "launcher": false
-    },
-    "open": {
-      "requires_root": false,
-      "lifecycle": "tracked",
-      "launcher": true
-    }
-  },
   "tray": {
-    "protocol": 1,
     "icon": "icon.jpeg",
-    "provider": "test-module.sh"
+    "provider": "tray/tray-provider.py",
+    "protocol": 1
   },
   "notifications": {
-    "protocol": 1
-  }
+    "protocol": 4
+  },
+  "settings": "settings/default.json"
 }

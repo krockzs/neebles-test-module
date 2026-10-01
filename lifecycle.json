@@ -1,0 +1,44 @@
+{
+  "hardcoded": {
+    "governor.install": "install",
+    "governor.update": "update",
+    "governor.uninstall": "uninstall",
+    "governor.enable": "enable",
+    "governor.disable": "disable"
+  },
+  "require": {},
+  "objects": {
+    "main": {
+      "initial_active": false,
+      "transition_active": {
+        "activate": true,
+        "deactivate": false
+      },
+      "transitions": {
+        "activate": {
+          "operations": {}
+        },
+        "deactivate": {
+          "operations": {}
+        }
+      }
+    }
+  },
+  "transitions": {
+    "install": {
+      "operations": {}
+    },
+    "update": {
+      "operations": {}
+    },
+    "uninstall": {
+      "operations": {}
+    },
+    "enable": {
+      "operations": {}
+    },
+    "disable": {
+      "operations": {}
+    }
+  }
+}

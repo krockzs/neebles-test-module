@@ -11,5 +11,7 @@
   "notification.command.state": "Comando state ejecutado",
   "notification.command.settings": "Configuración leída mediante Boss",
   "notification.command.toggle": "Configuración modificada mediante Boss",
-  "notification.command.external": "Evento de diagnóstico External emitido"
+  "notification.command.external": "Evento de diagnóstico External emitido",
+  "surface.open": "Abrir",
+  "surface.active": "Activo"
 }

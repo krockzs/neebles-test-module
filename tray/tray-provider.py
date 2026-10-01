@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3.13
 
 import json
 import os
 import queue
 import signal
 import socket
-import subprocess
+import sys
 import threading
 import tkinter as tk
 from pathlib import Path
@@ -25,12 +25,13 @@ def send_line(stream, message):
         stream.sendall(payload)
 
 
-def notify(message):
-    subprocess.run(
-        ["neebles", "notify", "success", "N.E.E.B.L.E.S. Test Module", message],
-        check=False,
-        stdin=subprocess.DEVNULL,
+def report_message(message):
+    print(
+        "N.E.E.B.L.E.S. Test Module Tray: "
+        + str(message),
+        file=sys.stderr,
     )
+
 
 
 def tray_settings_request(message):
@@ -203,11 +204,11 @@ def main():
             )
         except Exception as error:
             option1.set(not value)
-            notify(f"No se pudo guardar Opción 1: {error}")
+            report_message(f"No se pudo guardar Opción 1: {error}")
             publish_state(True)
             return
 
-        notify("Opción 1 encendida" if value else "Opción 1 apagada")
+        report_message("Opción 1 encendida" if value else "Opción 1 apagada")
         publish_state(True)
 
     def toggle2():
@@ -220,16 +221,16 @@ def main():
             )
         except Exception as error:
             option2.set(not value)
-            notify(f"No se pudo guardar Opción 2: {error}")
+            report_message(f"No se pudo guardar Opción 2: {error}")
             publish_state(True)
             return
 
-        notify("Opción 2 encendida" if value else "Opción 2 apagada")
+        report_message("Opción 2 encendida" if value else "Opción 2 apagada")
         publish_state(True)
 
     tk.Checkbutton(root, text="Opción 1", variable=option1, command=toggle1).pack(anchor="w", padx=30, pady=(30, 8))
     tk.Checkbutton(root, text="Opción 2", variable=option2, command=toggle2).pack(anchor="w", padx=30, pady=8)
-    tk.Button(root, text="Botón de prueba", command=lambda: notify("Botón de prueba presionado")).pack(pady=20)
+    tk.Button(root, text="Botón de prueba", command=lambda: report_message("Botón de prueba presionado")).pack(pady=20)
 
     def hide():
         root.withdraw()
