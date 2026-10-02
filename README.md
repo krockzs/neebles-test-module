@@ -1,84 +1,61 @@
 # N.E.E.B.L.E.S. Test Module
 
-`neebles-test-module` es el módulo canónico de referencia para validar la integración real entre un módulo externo y N.E.E.B.L.E.S. Boss.
+`neebles-test-module` es el módulo canónico de referencia para demostrar que un módulo externo puede integrarse a N.E.E.B.L.E.S. utilizando únicamente los contratos públicos del ecosistema.
 
-Su objetivo no es ofrecer una función de usuario final ni convertirse en una dependencia productiva del ecosistema. Existe para comprobar, de forma pequeña, explícita y reproducible, que los contratos públicos de Boss funcionan como fueron diseñados.
+No es una aplicación final ni una dependencia productiva obligatoria.
 
-En otras palabras: este repositorio es el ratón de laboratorio de Boss.
+Su función principal es servir como:
 
-Cuando una arquitectura nueva entra a Boss, este módulo permite verificar que un tercero podría utilizarla sin conocer la implementación interna de Boss y sin necesitar privilegios especiales fuera de los contratos declarados.
+- consumidor real del contrato de Boss;
+- módulo de certificación;
+- referencia de comunicación para módulos futuros;
+- plantilla conceptual para comprobar ownership, IPC, Lifecycle, Settings, Surfaces, Tray y Notifications.
 
-La versión actual del módulo es **1.2.0** y está alineada con **N.E.E.B.L.E.S. Boss 1.0.7**.
+La regla arquitectónica es:
 
----
+> Boss gobierna; el módulo declara; cada owner conserva su verdad.
 
-## Por qué existe este módulo
-
-Boss gobierna el ecosistema, pero no debe conocer la implementación interna de cada módulo.
-
-Un módulo puede estar escrito en Python, Rust, Go, Node.js, C++, Bash o cualquier otra tecnología. Lo importante es que respete los contratos públicos que Boss expone.
-
-Ese principio es central para N.E.E.B.L.E.S.:
-
-> Boss gobierna; el módulo declara; el módulo ejecuta.
-
-Por eso un módulo de prueba útil no puede limitarse a imprimir `Hello World`.
-
-Debe comportarse como un módulo real y recorrer los mismos caminos que recorrería un módulo de producción:
-
-- instalación desde registry;
-- lectura de `manifest.json`;
-- resolución de dependencias;
-- carga de contratos dinámicos;
-- registro de runtime persistente;
-- identidad y `session_id`;
-- lifecycle;
-- invocaciones dinámicas;
-- settings persistentes;
-- aislamiento de settings;
-- subscriptions;
-- eventos;
-- tray provider;
-- notificaciones;
-- External;
-- Telemetry como autoridad global de Boss;
-- cierre limpio del runtime.
-
-La idea es que, si este módulo funciona, Boss está demostrando que un módulo externo puede integrarse utilizando únicamente interfaces públicas.
+La versión actual del módulo es **1.2.0** y utiliza **Module Schema 4**, alineada con el contrato cerrado de **N.E.E.B.L.E.S. Boss 1.0.15**.
 
 ---
 
-## Qué NO es este módulo
+## Rol arquitectónico
 
-Este repositorio no intenta ser:
+Boss no contiene conocimiento específico de `test-module`.
 
-- una aplicación final;
-- una API paralela a Boss;
-- una segunda fuente de configuración;
-- un reemplazo del registry;
-- un reemplazo de los settings de Boss;
-- un sistema de telemetry propio;
-- una dependencia obligatoria del sistema;
-- una implementación especial que Boss deba conocer por nombre.
+El módulo puede estar implementado en Python hoy y ser reemplazado mañana por Rust, Go, Node.js, C++, C u otra tecnología sin exigir cambios en Boss mientras conserve los mismos contratos públicos.
 
-Boss no contiene lógica específica para `test-module`.
+Por eso este repositorio no define arquitectura de Boss.
 
-El módulo debe funcionar porque cumple los mismos contratos que cualquier otro módulo.
+Lo consume.
 
-Ese detalle es deliberado: si Boss necesitara saber que este módulo es "especial", la prueba perdería valor arquitectónico.
+`neebles-test-module` existe para demostrar que:
+
+- instalación y actualización pertenecen al Governor;
+- material físico pertenece a CUSTOM;
+- Platform Authority pertenece al sistema;
+- BUILD materializa;
+- Boss autentica, gobierna y enruta;
+- Lifecycle ejecuta contratos declarativos;
+- Settings persiste una única verdad canónica;
+- UI y Tray son consumidores de esa verdad;
+- Notifications utiliza el canal gobernado de Boss;
+- Runtime IPC conserva identidad y sesión;
+- las superficies no inventan functional state.
 
 ---
 
-## Arquitectura general
+## Estructura
 
-El módulo se organiza de la siguiente forma:
+La estructura relevante actual es:
 
     neebles-test-module/
     ├── manifest.json
+    ├── lifecycle.json
+    ├── surfaces.json
+    ├── runtime.py
     ├── README.md
     ├── icon.jpeg
-    ├── test-module.sh
-    ├── runtime.py
     ├── contracts/
     │   └── commands.json
     ├── settings/
@@ -89,912 +66,580 @@ El módulo se organiza de la siguiente forma:
     │   └── en_US.json
     ├── tray/
     │   └── tray-provider.py
-    └── ui/
-        └── test-module-ui.py
+    ├── ui/
+    │   └── test-module-ui.py
+    └── critical-update/
+        └── manifest.json
 
-Cada pieza tiene una responsabilidad separada.
+No existe Local Installer productivo.
 
-`manifest.json` declara el módulo.
+No existe `manifest.commands` top-level.
 
-`contracts/commands.json` declara comandos dinámicos.
+No existe arquitectura de aplicaciones basada en apt/dpkg dentro del módulo.
 
-`settings/default.json` define el árbol de settings permitido.
-
-`runtime.py` implementa el runtime persistente del módulo.
-
-`tray/tray-provider.py` implementa el provider del tray.
-
-`ui/test-module-ui.py` implementa una UI mínima de prueba.
-
-`languages/` mantiene las cadenas visibles separadas de la lógica.
+No existe fallback de host como autoridad.
 
 ---
 
-## Manifest Schema 3
+## Manifest Schema 4
 
-El módulo utiliza `manifest.json` con Schema 3.
+`manifest.json` declara:
 
-Actualmente declara:
+- `schema: 4`;
+- identidad `test-module`;
+- versión `1.2.0`;
+- entrypoint `runtime.py`;
+- Lifecycle en `lifecycle.json`;
+- Surfaces en `surfaces.json`;
+- Commands contract en `contracts/commands.json`;
+- Tray provider `tray/tray-provider.py`;
+- Tray protocol 1;
+- Notifications protocol 4;
+- Settings contract en `settings/default.json`.
 
-- nombre: `test-module`;
-- versión: `1.2.0`;
-- entrypoint: `test-module.sh`;
-- settings: `settings/default.json`;
-- contrato dinámico de tipo `commands`;
-- dependencias de sistema estructuradas;
-- comandos estáticos mínimos;
-- tray provider;
-- protocolo de notificaciones.
+Boss conoce únicamente estas superficies públicas.
 
-El manifest no describe cómo está implementada internamente cada función.
-
-Describe únicamente lo que Boss necesita conocer para gobernar el módulo.
-
----
-
-## Dependencias
-
-El módulo declara dependencias de sistema estructuradas en el manifest.
-
-Actualmente utiliza:
-
-- `python3`;
-- `python3-tk`.
-
-Cada dependencia declara por separado:
-
-- cómo instalarla;
-- cómo verificarla;
-- si es requerida.
-
-Boss es responsable de resolver ese contrato mediante su sistema de dependencias.
-
-El módulo no ejecuta `apt` directamente para autocorregirse.
-
-Eso mantiene una sola autoridad de instalación y permite que Boss pueda auditar, reparar y reverificar dependencias de manera coherente.
+No conoce la implementación interna de Python.
 
 ---
 
-## Launcher y lifecycle
+## Lifecycle
 
-El manifest declara el comando `open` como:
+`lifecycle.json` enlaza las acciones generales del Governor:
 
-- `lifecycle: tracked`;
-- `launcher: true`;
-- sin requerir root.
+    governor.install   -> install
+    governor.update    -> update
+    governor.uninstall -> uninstall
+    governor.enable    -> enable
+    governor.disable   -> disable
 
-El usuario puede abrir el módulo con:
+El Test Module no declara actualmente objetos Lifecycle adicionales.
 
-    neebles test-module open
+Eso es deliberado.
 
-Boss inicia el entrypoint y sigue el lifecycle del proceso.
+El estado global Active/Inactive del módulo pertenece a Boss Modules y al Governor.
 
-El runtime permanece vivo mientras la UI está abierta.
+No existe un objeto artificial `main`.
 
-Cuando la UI se cierra, el runtime envía `unregister` y termina limpiamente.
+`OPEN` tampoco significa activar el módulo.
 
-Si Boss solicita `shutdown`, el runtime responde con `shutdown_ack` antes de terminar.
+`OPEN` abre el programa principal.
 
-El runtime también responde a `ping` con `pong`.
+Las cinco transiciones actuales poseen `operations: {}` porque este módulo no necesita ejecutar trabajo específico adicional durante esas fases.
 
----
+Una transición vacía es válida.
 
-## Runtime persistente
+Lifecycle no ejecuta operaciones ficticias sólo para demostrar infraestructura.
 
-El runtime se implementa actualmente en Python, pero Python no forma parte del contrato arquitectónico.
+Boss dispone del límite genérico:
 
-Su responsabilidad es conectarse al socket de módulos de Boss:
-
-    /run/neebles/modules.sock
-
-El socket puede ser reemplazado durante pruebas mediante:
-
-    NEEBLES_MODULES_SOCKET
-
-La comunicación usa:
-
-- Unix socket;
-- conexión persistente;
-- framing binario con longitud de 32 bits;
-- JSON UTF-8 como payload;
-- límite local de frame de 16 MiB.
-
-La conexión permanece activa durante toda la vida del runtime.
-
----
-
-## Registro del runtime
-
-Al iniciar, el runtime crea un `session_id` único y envía un mensaje `register`.
-
-Declara:
-
-- protocolo;
-- identidad del módulo;
-- `session_id`;
-- endpoints realmente cargados.
-
-Los endpoints no están duplicados manualmente dentro del runtime.
-
-Se descubren desde:
-
-    contracts/commands.json
-
-Esto evita que el contrato y la implementación mantengan dos listas separadas que puedan divergir.
-
-Boss valida el registro antes de aceptar el runtime.
-
-Entre otras cosas, Boss puede comprobar:
-
-- versión del protocolo;
-- identidad instalada;
-- estado enabled;
-- validez de los endpoints declarados;
-- duplicación de runtimes;
-- correspondencia entre instalación y contrato.
-
-Sólo después de esa validación Boss responde con `registered`.
-
----
-
-## Identidad y aislamiento de sesión
-
-Cada mensaje importante del runtime conserva dos identificadores:
-
-- `module`;
-- `session_id`.
-
-El runtime valida las respuestas de Boss y rechaza mensajes que no correspondan a su identidad o sesión actual.
-
-Esto evita tratar una conexión persistente como un canal anónimo.
-
-El runtime no asume que cualquier mensaje recibido por el socket le pertenece.
-
----
-
-## Contratos dinámicos
-
-El archivo:
-
-    contracts/commands.json
-
-declara actualmente ocho comandos dinámicos:
-
-    neebles test-module version
-    neebles test-module hello
-    neebles test-module notify
-    neebles test-module state
-    neebles test-module settings
-    neebles test-module toggle
-    neebles test-module events
-    neebles test-module external
-
-Cada comando utiliza lifecycle `runtime` y state mode `preserve`.
-
-Boss traduce el comando visible a un endpoint concreto y entrega una invocación al runtime registrado.
-
-El módulo responde utilizando el mismo:
-
-- `id`;
-- `module`;
-- `session_id`;
-- `contract`;
-- `endpoint`.
-
-Esto permite que Boss correlacione invocaciones y respuestas sin conocer la implementación interna del endpoint.
-
----
-
-## Comando `version`
-
-    neebles test-module version
-
-Devuelve la versión declarada en `manifest.json`.
-
-Su propósito es comprobar:
-
-- resolución de comando dinámico;
-- invocación runtime;
-- lectura de manifest;
-- respuesta estructurada;
-- notificación del módulo.
-
----
-
-## Comando `hello`
-
-    neebles test-module hello
-
-Devuelve una cadena localizada.
-
-Su propósito es comprobar que la implementación interna puede utilizar el sistema de idiomas del propio módulo sin que Boss necesite conocer sus archivos de traducción.
-
----
-
-## Comando `notify`
-
-    neebles test-module notify
-
-Genera una notificación mediante:
-
-    neebles notify
-
-Sirve para comprobar que un módulo puede usar la infraestructura pública de notificaciones de Boss en lugar de implementar un mecanismo paralelo.
-
----
-
-## Comando `state`
-
-    neebles test-module state
-
-Devuelve información del runtime, incluyendo:
-
-- estado `ready`;
-- `session_id`;
-- estado de la UI;
-- subscriptions actuales;
-- cantidad de eventos retenidos en memoria.
-
-Este comando permite observar el estado del runtime sin acceder directamente a estructuras internas de Boss.
-
----
-
-## Settings persistentes
-
-El módulo declara su árbol permitido en:
-
-    settings/default.json
-
-Actualmente contiene:
-
-    hardcoded.module
-    tray.option1
-    tray.option2
-    ui
-
-Los valores editables siguen el contrato String utilizado por Boss.
-
-El runtime no modifica directamente archivos dentro de `/opt/neebles/shared/settings`.
-
-Utiliza el protocolo IPC de módulos.
-
----
-
-## SettingsGet
-
-El comando:
-
-    neebles test-module settings
-
-solicita a Boss:
-
-    tray.option1
-    tray.option2
-
-utilizando mensajes `settings_get`.
-
-Boss:
-
-1. identifica al módulo por su sesión;
-2. carga el default declarado por el módulo;
-3. carga o crea el estado local persistente;
-4. aplica la lógica de settings efectivos;
-5. devuelve `settings_value`.
-
-El módulo recibe el valor efectivo, no necesita conocer dónde ni cómo Boss persiste ese estado.
-
----
-
-## SettingsSet
-
-El comando:
-
-    neebles test-module toggle
-
-lee primero:
-
-    tray.option1
-
-y luego escribe el valor contrario mediante `settings_set`.
-
-Boss realiza la persistencia.
-
-El módulo no escribe directamente el archivo local de settings.
-
-Esto valida una propiedad importante de la arquitectura:
-
-> el módulo posee el significado de su setting, pero Boss posee el mecanismo de persistencia y aislamiento.
-
-Cuando el valor realmente cambia, Boss publica además un evento:
-
-    topic: settings.test-module
-    event: changed
-
----
-
-## Persistent Convergence
-
-Los settings del módulo están diseñados para trabajar con el modelo de convergencia persistente de Boss:
-
-    hardcoded
-        >
-    local sparse meaningful state
-        >
-    module defaults
-
-Esto significa que:
-
-- los hardcoded no pueden ser sobrescritos localmente;
-- los cambios del usuario sobreviven reinstalaciones compatibles;
-- valores iguales al default no necesitan duplicarse como estado local;
-- nuevos defaults pueden aparecer sin destruir preferencias compatibles;
-- settings eliminados del contrato no permanecen artificialmente como estado válido.
-
-El módulo existe también para comprobar que esta arquitectura funciona desde la perspectiva de un consumidor externo.
-
----
-
-## Aislamiento de settings
-
-El runtime se suscribe únicamente a:
-
-    settings.test-module
-
-No se suscribe a settings de otros módulos.
-
-Boss rechaza suscripciones del tipo:
-
-    settings.otro-modulo
-
-cuando son solicitadas por `test-module`.
-
-Además, el registry de Boss vuelve a filtrar eventos de settings por propietario incluso si un runtime utiliza una suscripción wildcard.
-
-Esto implementa aislamiento en más de una capa.
-
-El módulo de prueba no intenta evadir ese aislamiento; lo utiliza como parte del contrato esperado.
-
----
-
-## Subscriptions
-
-Después de recibir `registered`, el runtime envía un mensaje `subscribe`.
-
-Actualmente solicita:
-
-    module.lifecycle
-    settings.test-module
-
-Boss responde con `subscribed`.
-
-El runtime verifica que el conjunto aceptado coincide con el solicitado.
-
-Si Boss responde con un conjunto inesperado, el runtime considera que el contrato no fue satisfecho.
-
----
-
-## Eventos
-
-Los eventos recibidos se almacenan temporalmente en memoria.
-
-El historial utiliza una cola acotada de 64 elementos.
-
-No existe persistencia paralela en disco.
-
-El comando:
-
-    neebles test-module events
-
-devuelve:
-
-- subscriptions activas;
-- eventos retenidos.
-
-Esto permite probar eventos sin convertir el test-module en una segunda base de datos del sistema.
-
----
-
-## `module.lifecycle`
-
-El runtime se suscribe a:
-
-    module.lifecycle
-
-Este topic permite observar eventos de lifecycle que Boss publica para módulos y runtimes.
-
-Entre ellos pueden aparecer eventos relacionados con:
-
-- runtime ready;
-- runtime dead;
-- instalación;
-- actualización;
-- enable;
-- disable;
-- uninstall.
-
-El módulo no decide cuándo ocurre un lifecycle.
-
-Sólo recibe la información que Boss publica.
-
----
-
-## Tray provider
-
-El manifest declara un tray provider con protocolo 1.
-
-El provider se inicia cuando Boss lo solicita mediante:
-
-    NEEBLES_CALLER=tray-manager
-
-y utiliza el mismo entrypoint general:
-
-    test-module.sh
-
-El script delega entonces en:
-
-    tray/tray-provider.py
-
-El tray provider se conecta al socket del Tray Manager y registra:
-
-- protocolo;
-- `tray_id`;
-- módulo propietario;
-- PID.
-
----
-
-## Estado del tray
-
-El tray mantiene dos opciones de prueba:
-
-    tray.option1
-    tray.option2
-
-Su UI permite:
-
-- activar o desactivar Opción 1;
-- activar o desactivar Opción 2;
-- ejecutar un botón de prueba.
-
-Cada cambio utiliza settings persistentes de Boss.
-
-El estado visual del tray no es la fuente de verdad.
-
-La fuente de verdad sigue siendo Boss.
-
----
-
-## Settings desde Tray Manager
-
-El tray provider no accede directamente a los archivos del módulo.
-
-Utiliza mensajes:
-
-    settings_get
-    settings_set
-
-hacia el Tray Manager.
-
-El Tray Manager autentica el owner del tray antes de permitir acceso a settings.
-
-Esto demuestra que distintos frontends de un mismo módulo pueden utilizar la misma fuente persistente sin compartir acceso directo al filesystem.
-
----
-
-## UI del módulo
-
-La UI actual está implementada con Tkinter exclusivamente para mantener la prueba pequeña y fácil de ejecutar.
-
-No es una recomendación tecnológica para módulos reales.
-
-La UI descubre los comandos leyendo:
-
-    contracts/commands.json
-
-No contiene una lista hardcodeada paralela.
-
-Por cada comando muestra:
-
-- el comando completo;
-- un botón de ejecución;
-- stdout;
-- stderr;
-- exit code.
-
-La UI ejecuta siempre:
-
-    neebles test-module <command>
-
-Es decir, incluso estando dentro del propio módulo, vuelve a atravesar Boss.
-
-Eso es intencional.
-
-La UI no invoca funciones internas de `runtime.py`.
-
-Así se comprueba el recorrido real que utilizaría cualquier cliente externo.
-
----
-
-## External
-
-El comando:
-
-    neebles test-module external
-
-existe exclusivamente para validar la ruta de diagnósticos External.
-
-El runtime genera deliberadamente un mensaje `error` sin `id`.
-
-Boss interpreta ese mensaje como un error espontáneo del runtime.
-
-Boss puede construir entonces un evento External de tipo error.
-
-La ruta conceptual es:
-
-    test-module
+    boss.workspace_execution
         ->
-    Module IPC
-        ->
-    Boss
-        ->
-    External boundary
+    construction.step
 
-El módulo no implementa transporte remoto.
+para módulos que sí necesiten ejecutar Domestic Construction mediante `subject + step`.
 
-El módulo tampoco decide si el evento puede salir del sistema.
+El Test Module no obliga a utilizarlo cuando no existe trabajo real que realizar.
 
 ---
 
-## Telemetry
+## Surfaces
 
-Telemetry pertenece a Boss.
+`surfaces.json` contiene actualmente una única superficie propia:
 
-El módulo no puede habilitarla.
+    open.launcher
 
-El módulo sólo puede producir un evento que potencialmente alcance External.
-
-La autoridad global es:
-
-    telemetry.enabled
-
-Por diseño:
-
-    Telemetry OFF
-        ->
-    Boss bloquea la transmisión External
-
-    Telemetry ON
-        ->
-    Boss permite que el evento atraviese la frontera External configurada
-
-El test-module nunca modifica ese setting.
-
-Eso es importante porque un módulo no debe poder concederse a sí mismo permiso para transmitir datos fuera del sistema.
-
----
-
-## External no significa transporte remoto implementado
-
-La prueba `external` valida que el módulo puede producir correctamente un evento hacia la frontera External de Boss.
-
-No implica que exista actualmente un transporte remoto productivo configurado.
-
-Boss conserva la autoridad sobre cualquier transporte futuro.
-
-Esto mantiene separadas dos responsabilidades:
-
-- producir un evento External;
-- transportar ese evento a infraestructura remota.
-
----
-
-## Notificaciones
-
-El módulo utiliza:
-
-    neebles notify
-
-para demostrar que puede apoyarse en servicios transversales de Boss.
-
-Las cadenas visibles del runtime se obtienen desde los archivos de idiomas del módulo.
-
-Actualmente se soportan:
-
-- `es_CL`;
-- `en_US`.
-
-El idioma solicitado puede llegar mediante:
-
-    NEEBLES_LANGUAGE
-
-El módulo normaliza variantes con locale y fallback al idioma default.
-
----
-
-## `test-module.sh`
-
-`test-module.sh` es el entrypoint declarado en el manifest.
-
-Tiene tres responsabilidades simples.
-
-Cuando el caller es Tray Manager:
-
-    NEEBLES_CALLER=tray-manager
-
-ejecuta el tray provider.
-
-Cuando recibe:
+Su acción es:
 
     open
 
-ejecuta el runtime persistente.
+y representa el acceso al programa principal.
 
-Cuando recibe:
+No existe `main.ui`.
 
-    default
+No existe un booleano funcional de Active/Inactive duplicado dentro de las superficies.
 
-muestra información mínima del módulo.
+La visibilidad del launcher pertenece a Boss Settings.
 
-Toda la funcionalidad dinámica moderna viaja por contratos de Boss, no por una lista creciente de casos Bash.
+El estado global del módulo pertenece al Governor.
 
----
+La apertura de la UI es estado efímero del programa.
 
-## Por qué el runtime no es un daemon independiente
-
-El módulo podría implementar un daemon propio, pero eso debilitaría la prueba.
-
-Queremos comprobar que el lifecycle gobernado por Boss es suficiente.
-
-Boss conoce:
-
-- qué módulo está instalado;
-- qué comando abre el runtime;
-- qué proceso está vivo;
-- qué sesión se registró;
-- qué endpoints declaró;
-- cómo detenerlo.
-
-El módulo conserva libertad interna detrás de ese contrato.
+Son verdades distintas.
 
 ---
 
-## Por qué el módulo usa Python
+## Commands contract
 
-Python fue elegido por velocidad de iteración y legibilidad.
+`contracts/commands.json` declara actualmente diez comandos:
 
-No existe ninguna dependencia arquitectónica de Boss hacia Python.
+    open
+    version
+    hello
+    notify
+    state
+    settings
+    setting
+    toggle
+    events
+    external
 
-La misma implementación podría reemplazarse por:
+`open` es el launcher canónico.
 
-- Rust;
-- Go;
-- Node.js;
-- C++;
-- otro lenguaje.
+Los demás utilizan Lifecycle `runtime`.
 
-Mientras se mantengan:
+Ningún endpoint declara root.
 
-- manifest;
-- contratos;
-- protocolos;
-- framing;
-- identidad;
-- lifecycle;
-- settings;
-- subscriptions;
+Los endpoints internos actuales son:
 
-Boss no debería requerir cambios.
+    ui.open
+    test.version
+    test.hello
+    test.notify
+    test.state
+    test.settings
+    test.setting
+    test.toggle
+    test.events
+    test.external
 
-Esa posibilidad de reemplazo es una de las cosas que este módulo pretende demostrar.
+El runtime descubre sus endpoints desde este contrato.
 
----
-
-## Motivación arquitectónica
-
-N.E.E.B.L.E.S. busca evitar que el orquestador se transforme en una colección de excepciones especiales.
-
-Boss no debe aprender cómo trabaja cada módulo.
-
-Debe aprender a exigir contratos.
-
-El test-module funciona como prueba continua de esa idea.
-
-Cuando Boss incorpora una capacidad transversal nueva, hay una pregunta útil:
-
-> ¿puede `neebles-test-module` utilizarla sin agregar lógica específica dentro de Boss?
-
-Si la respuesta es sí, la frontera arquitectónica probablemente está bien ubicada.
-
-Si la respuesta requiere que Boss conozca detalles privados del módulo, la abstracción debe revisarse.
+No mantiene una segunda lista manual.
 
 ---
 
-## Bondades de mantener un módulo canónico de referencia
+## Runtime IPC
 
-Tener este repositorio separado aporta varias ventajas.
+`runtime.py` es actualmente la implementación del runtime persistente.
 
-### 1. Contrato observable
+Python es una decisión de implementación, no una dependencia arquitectónica de Boss.
 
-La documentación de Boss puede describir una API, pero este módulo demuestra cómo consumirla realmente.
+El runtime:
 
-### 2. Evita acoplamiento accidental
+- se conecta al Module IPC de Boss;
+- genera un `session_id`;
+- registra identidad y endpoints;
+- valida la identidad de las respuestas;
+- mantiene una conexión persistente;
+- se suscribe a topics permitidos;
+- atiende invocaciones;
+- procesa eventos;
+- responde a shutdown;
+- realiza unregister al salir.
 
-Si una función sólo puede utilizarse desde código interno de Boss, este módulo lo revela rápidamente.
+Las subscriptions actuales incluyen:
 
-### 3. Facilita regresiones
+    module.lifecycle
+    settings.test-module
 
-Después de modificar Boss se puede reinstalar o actualizar este módulo y comprobar si continúa funcionando.
-
-### 4. Sirve como ejemplo para futuros módulos
-
-Un desarrollador no necesita copiar internals de Boss.
-
-Puede observar:
-
-- manifest;
-- contracts;
-- runtime;
-- tray;
-- settings;
-- subscriptions.
-
-### 5. Obliga a separar autoridad
-
-El módulo prueba que determinadas responsabilidades pertenecen a Boss:
-
-- instalación;
-- dependencia;
-- settings persistentes;
-- aislamiento;
-- lifecycle;
-- Telemetry.
-
-Mientras otras pertenecen al módulo:
-
-- comportamiento;
-- UI;
-- significado de settings;
-- lógica del endpoint.
-
-### 6. Reduce rutas especiales
-
-Cuanto más pueda validarse mediante este módulo, menos razones existen para introducir caminos ad hoc dentro de Boss.
+Boss conserva el ownership de autenticación, aislamiento y routing.
 
 ---
 
-## Flujo completo esperado
+## OPEN y UI
 
-Una integración real puede resumirse así:
+El comando:
 
-    registry
-        ->
-    Boss instala test-module
-        ->
-    Boss valida manifest
-        ->
-    Boss resuelve dependencias
-        ->
-    Boss carga contracts
-        ->
-    usuario ejecuta neebles test-module open
-        ->
-    Boss inicia lifecycle tracked
-        ->
-    runtime conecta modules.sock
-        ->
-    runtime Register
-        ->
-    Boss valida identidad + endpoints
-        ->
-    Boss Registered
-        ->
-    runtime Subscribe
-        ->
-    Boss Subscribed
-        ->
-    UI abre
-        ->
-    usuario ejecuta comandos
-        ->
-    Boss Invoke
-        ->
-    runtime Response
-        ->
-    settings / events / notifications / External
-        ->
-    cierre UI
-        ->
-    Unregister
-        ->
-    Boss retira runtime del registry
+    neebles test-module open
 
-Ese recorrido es el propósito central de este repositorio.
+resuelve el endpoint:
+
+    ui.open
+
+El runtime crea la UI únicamente cuando corresponde.
+
+La UI no es la fuente de verdad de Settings.
+
+Al abrirse recibe desde el runtime los valores canónicos actuales de:
+
+    features.option1
+    features.option2
+
+La UI puede solicitar cambios, pero primero persiste mediante Boss y sólo después refleja el valor canónico aceptado.
+
+Esto aplica la regla:
+
+> persist first, project later.
+
+El estado visual local nunca sustituye la verdad persistente de Boss.
 
 ---
 
-## Qué debe certificar una prueba integrada
+## Settings
 
-La certificación integrada con Boss debe comprobar, al menos:
+`settings/default.json` declara actualmente:
 
-1. instalación o actualización del módulo;
-2. resolución de `python3` y `python3-tk`;
-3. preservación de settings compatibles;
-4. apertura mediante launcher;
-5. registro del runtime;
-6. aceptación del protocolo;
-7. aceptación de endpoints;
-8. subscriptions;
-9. `version`;
-10. `hello`;
-11. `notify`;
-12. `state`;
-13. lectura de settings;
-14. escritura de settings;
-15. evento `settings.test-module`;
-16. recepción de `module.lifecycle`;
-17. tray provider;
-18. persistencia entre cierre y reapertura;
-19. productor External;
-20. autoridad Telemetry de Boss;
-21. shutdown/unregister;
-22. reinstalación;
-23. actualización;
-24. uninstall con y sin preservación de settings.
+    hardcoded.module
+    ui
+    features.option1
+    features.option2
+
+Los settings de las features son:
+
+    features.option1
+    features.option2
+
+No pertenecen al namespace Tray.
+
+Tray y UI son dos consumidores distintos de las mismas preferencias del módulo.
+
+El archivo persistente local pertenece al mecanismo de Settings de Boss.
+
+El módulo no lo modifica directamente.
 
 ---
 
-## Relación con N.E.E.B.L.E.S. OS
+## Convergencia realtime
 
-El módulo no depende de una personalización privada de N.E.E.B.L.E.S. OS.
+Cualquier writer autorizado puede modificar un setting canónico:
 
-Depende de los contratos públicos que Boss ofrece dentro del ecosistema.
+    Boss / CLI
+    UI
+    Tray
+    futuros consumidores
 
-En una certificación integrada, N.E.E.B.L.E.S. OS aporta el entorno real donde deben coexistir:
+La regla es:
 
-- Boss;
-- servicios;
-- sockets;
+    writer
+      ->
+    Boss Settings
+      ->
+    persistencia canónica
+      ->
+    evento settings.<module>/changed
+      ->
+    proyección a consumidores
+
+El evento informa del cambio.
+
+No es la fuente de verdad.
+
+UI y Tray convergen inmediatamente al valor aceptado por Boss.
+
+---
+
+## Persistencia
+
+La instalación crea Settings locales desde el default sólo cuando todavía no existen.
+
+Una reinstalación con Settings preservados no sobrescribe el archivo existente.
+
+Un update puede reconciliar el contrato con nuevos defaults sin destruir preferencias compatibles.
+
+Un uninstall puede:
+
+- preservar Settings;
+- eliminar Settings cuando se solicita explícitamente.
+
+La elección pertenece al flujo gobernado por Boss.
+
+---
+
+## Tray
+
+El manifest declara:
+
+    tray/tray-provider.py
+
+como provider del Tray Manager.
+
+El Tray provider:
+
+- registra identidad y PID;
+- recibe órdenes del Tray Manager;
+- utiliza SettingsGet/SettingsSet gobernados;
+- mantiene `features.option1`;
+- mantiene `features.option2`;
+- recibe `settings_changed`;
+- vuelve a consultar la verdad canónica durante reload;
+- publica su estado visual al manager.
+
+El Tray no define el estado global Active/Inactive del módulo.
+
+Al desactivar el módulo, Boss corta su comportamiento funcional según el Governor.
+
+La configuración visual de las superficies continúa perteneciendo a Boss.
+
+---
+
+## Notifications
+
+Notifications utiliza protocol 4.
+
+El runtime no ejecuta un CLI secundario para notificar.
+
+Envía directamente por Module IPC:
+
+    type: default_notification
+
+incluyendo:
+
+- módulo;
+- session_id;
+- severity;
+- icon relativo al módulo;
+- title;
+- message;
+- timeout;
+- replace_id.
+
+Boss responde con:
+
+    notification_ack
+
+o con un error gobernado.
+
+El icono declarado por el módulo es relativo:
+
+    icon.jpeg
+
+Nunca una ruta absoluta privada del host.
+
+---
+
+## External y Telemetry
+
+`test.external` permite comprobar la frontera External de Boss.
+
+El módulo puede producir un diagnóstico.
+
+Eso no le concede autoridad para habilitar Telemetry ni para decidir el transporte exterior.
+
+Telemetry continúa siendo autoridad global de Boss.
+
+Producir un evento y autorizar su salida son responsabilidades separadas.
+
+---
+
+## Material y Preinstall
+
+Las dependencias físicas del Test Module no viven como lógica apt/dpkg dentro del manifest.
+
+CUSTOM conserva y declara el material del módulo.
+
+Actualmente el material certificado contiene:
+
+    47 DEBs
+
+CUSTOM mantiene:
+
+- membership;
+- integridad SHA;
+- pool compartido;
+- Domestic Construction declaration.
+
+Boss ejecuta Preinstall antes de Lifecycle durante install/update.
+
+La regla del pool es:
+
+    DEB existente + SHA correcto
+        -> reutilizar
+
+    DEB faltante
+        -> obtener desde CUSTOM canónico
+
+    DEB existente + SHA incorrecto
+        -> RED
+        -> no sobrescribir silenciosamente
+
+Uninstall no elimina el pool compartido.
+
+No existe refcount ni GC productivo para esos artefactos.
+
+---
+
+## Domestic Construction
+
+CUSTOM mantiene la declaración:
+
+    runtime/construction/test-module.json
+
+La declaración describe construction mediante identidades y authorities.
+
+Boss dispone del adapter Lifecycle genérico:
+
+    artillery:
+        boss.workspace_execution
+
+    objective:
+        construction.step
+
+y acepta únicamente:
+
+    munition.subject
+    munition.step
+
+Boss resuelve el resto mediante:
+
+- Domestic Construction;
+- AuthoritySupply;
+- Materialized Runtime;
+- Workspace Execution.
+
+Lifecycle no conoce Python, Git, Qt ni las rutas privadas del módulo.
+
+---
+
+## Critical Update
+
+`critical-update/manifest.json` puede permanecer en cero bytes cuando una release no necesita instrucciones Critical Update.
+
+Eso es una declaración válida.
+
+No se inventa una operación sólo para poblar el archivo.
+
+---
+
+## Certificación del módulo
+
+La certificación del Test Module se divide en capas.
+
+### Adaptación contractual
+
+Point 9 adapta el módulo al contrato cerrado de Boss.
+
+Entre otras cosas certifica:
+
+- Schema 4;
+- Commands contract dinámico;
+- Lifecycle final;
+- SurfaceContent;
+- Module IPC;
+- Notifications protocol 4;
+- Settings ownership;
+- Tray ownership;
+- Preinstall;
+- CUSTOM material;
+- Domestic Construction;
+- ausencia de rutas legacy productivas.
+
+### Certificación funcional
+
+Point 10 demuestra el comportamiento completo del módulo:
+
+    install
+      ->
+    enable
+      ->
+    UI
+      ->
+    settings
+      ->
+    tray
+      ->
+    notifications
+      ->
+    disable
+      ->
+    enable
+      ->
+    update
+      ->
+    uninstall
+      ->
+    reinstall
+
+La aceptación de una ISO N.E.E.B.L.E.S. instalada en VM pertenece a una fase posterior.
+
+No se simula una aceptación de VM desde el host de desarrollo.
+
+---
+
+## Evidencia certificada hasta ahora
+
+La regresión realtime posterior al cleanup de Surface/Lifecycle comprobó:
+
+- Runtime + UI + Tray;
+- Boss -> UI + Tray;
+- UI -> Boss + Tray;
+- Tray -> Boss + UI;
+- persistencia después de reinicio;
+- cero rewrite inesperado.
+
+La matriz transaccional del Governor comprobó:
+
+- install;
+- Preinstall con 47 DEBs reutilizados;
+- disable;
+- enable;
+- disable/re-enable;
+- update;
+- preservación de Settings;
+- uninstall preservando Settings;
+- reinstall reutilizando Settings byte-for-byte;
+- uninstall eliminando Settings;
+- persistencia del pool compartido;
+- source productivo intacto.
+
+Estas pruebas no equivalen todavía a la aceptación final de VM.
+
+---
+
+## Fronteras de ownership
+
+Resumen:
+
+    CUSTOM
+        conserva y declara material
+
+    OS
+        define Platform Authority
+
+    BUILD
+        materializa
+
+    Boss
+        gobierna, autentica, persiste y enruta
+
+    Lifecycle
+        ejecuta contratos declarativos
+
+    Test Module
+        consume contratos e implementa comportamiento
+
+El Test Module jamás debe obligar a Boss a conocer su tecnología privada.
+
+---
+
+## Uso como plantilla
+
+El valor de este repositorio no está en copiar su Tkinter, Python o diseño visual.
+
+La plantilla real es la forma en que se conecta al ecosistema:
+
+- Manifest;
+- Commands;
+- Lifecycle;
+- Surfaces;
+- Settings;
+- Module IPC;
+- Tray protocol;
+- Notifications;
 - ownership;
-- dependencias;
-- registry;
-- módulos;
-- settings;
-- tray;
-- UI.
+- authority;
+- persistencia.
 
-El módulo permite recorrer esa integración desde el punto de vista de un consumidor externo.
+Los módulos reales pueden tener tecnologías y funcionalidades completamente distintas.
 
----
-
-## Versionado
-
-La versión actual es:
-
-    1.2.0
-
-La versión `1.2.0` representa la alineación con los contratos persistentes actuales de Boss 1.0.7:
-
-- subscriptions;
-- module lifecycle events;
-- module settings IPC;
-- settings event isolation;
-- External producer path;
-- descubrimiento dinámico de endpoints.
-
-Cambios futuros del módulo deben aumentar su versión cuando modifiquen el contrato o comportamiento observable utilizado para certificación.
+Lo que reutilizan es el contrato de comunicación.
 
 ---
 
 ## Principio final
 
-`neebles-test-module` debe permanecer pequeño comparado con Boss.
+Si un futuro módulo puede:
 
-Su valor no está en tener muchas funciones.
+- instalarse;
+- declararse;
+- comunicarse;
+- persistir;
+- abrir superficies;
+- publicar notificaciones;
+- activar/desactivar comportamiento;
+- actualizarse;
+- desinstalarse;
 
-Su valor está en recorrer correctamente las fronteras importantes.
+sin introducir conocimiento específico dentro de Boss, entonces la frontera arquitectónica está funcionando.
 
-Si mañana cambia completamente su implementación interna pero sigue funcionando sin modificar Boss, entonces el contrato está cumpliendo su propósito.
-
-Ese es el rol del módulo dentro de N.E.E.B.L.E.S.:
-
-> ser una implementación externa suficientemente real para demostrar que Boss gobierna por contratos y no por conocimiento privado de sus módulos.
+Ése es el propósito de N.E.E.B.L.E.S. Test Module.
