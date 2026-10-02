@@ -483,9 +483,9 @@ Lifecycle no conoce Python, Git, Qt ni las rutas privadas del módulo.
 
 ## Critical Update
 
-`critical-update/manifest.json` puede permanecer en cero bytes cuando una release no necesita instrucciones Critical Update.
+`critical-update/manifest.json` representa canónicamente la ausencia de instrucciones Critical Update mediante un array JSON vacío (`[]`).
 
-Eso es una declaración válida.
+Eso declara explícitamente que la release no requiere instrucciones Critical Update.
 
 No se inventa una operación sólo para poblar el archivo.
 
