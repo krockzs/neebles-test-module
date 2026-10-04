@@ -907,8 +907,25 @@ def next_runtime_message(stream):
     return read_message(stream)
 
 
+def requested_intent():
+    arguments = sys.argv[1:]
+
+    if not arguments:
+        return None
+
+    if arguments == ["--intent", "open"]:
+        return "open"
+
+    raise ValueError(
+        "unsupported runtime arguments: "
+        + " ".join(arguments)
+    )
+
+
 def main():
     global STOP, UI_PROCESS
+
+    intent = requested_intent()
 
     identity = os.environ.get(
         "NEEBLES_MODULE",
@@ -978,6 +995,25 @@ def main():
         stream,
         session_id,
     )
+
+    if intent == "open":
+        UI_PROCESS = launch_ui()
+
+        for setting_path in (
+            "features.option1",
+            "features.option2",
+        ):
+            push_ui_message(
+                {
+                    "type": "settings_changed",
+                    "path": setting_path,
+                    "value": settings_get(
+                        stream,
+                        session_id,
+                        setting_path,
+                    ),
+                }
+            )
 
     try:
         while not STOP:
