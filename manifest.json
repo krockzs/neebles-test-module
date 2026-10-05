@@ -16,7 +16,8 @@
   "tray": {
     "icon": "icon.jpeg",
     "provider": "tray/tray-provider.py",
-    "protocol": 1
+    "protocol": 1,
+    "construction_step": "tray-provider"
   },
   "notifications": {
     "protocol": 4

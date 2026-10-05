@@ -600,16 +600,47 @@ Persist first, project later.
 
 # 19. Tray
 
-The current Tray provider is optional module behavior.
+The Test Module Tray provider is optional module behavior governed by Boss infrastructure without exposing its private technology to Boss.
 
-Tray:
+Its manifest declares:
 
-- consumes canonical settings;
-- may request SettingsGet/SettingsSet;
-- reacts to settings changes;
-- publishes visual state.
+```text
+tray.provider             tray/tray-provider.py
+tray.protocol             1
+tray.construction_step    tray-provider
+```
 
-Tray does not own global module Active/Inactive state.
+Its CUSTOM V2 Construction step declares:
+
+```text
+runtime_authority         modules.runtime
+world                     modules.python3.13-tk
+execution                 persistent
+session                   true
+session_readonly          neebles/tray.sock
+```
+
+Productive birth:
+
+```text
+Boss Tray reconciliation
+    -> module Tray contract
+    -> tray-provider Construction step
+    -> modules.runtime
+    -> authenticated RuntimeLease
+    -> Essential + Test Module delta
+    -> desktop-session authority
+    -> readonly Tray socket grant
+    -> Workspace boundary
+    -> persistent provider
+    -> kernel SO_PEERCRED registration
+```
+
+Boss does not know that this provider currently uses Python/Tk.
+
+Tray consumes canonical settings, reacts to settings changes and publishes visual state. It does not own global module Active/Inactive state.
+
+The Construction supervisor owns a dedicated process group. Runtime stop is fail-closed around PID-incarnation identity.
 
 ---
 
@@ -738,21 +769,40 @@ Current source-side reference gates are GREEN for:
 ```text
 Schema 4
 Construction contract
-runtime world
-47-DEB declarative package set
-module material manifest
+Essential layer                          59 DEBs
+Test Module delta                        32 DEBs
+MaterialBinding
+RuntimeLease
+runtime world modules.python3.13-tk
+module material integrity manifest
 governor.open
-construction.step
-persistent execution
+construction.step open-runtime
+persistent Open execution
+tray.construction_step tray-provider
+persistent Tray execution
 desktop-session projection
+strict session readonly grant
 boss.modules.ipc
 dynamic installed-runtime readonly projection
 runtime --intent open
+NEEBLES_* domestic environment sealing
+PID-incarnation Tray ownership
+process-group lifecycle ownership
+kernel SO_PEERCRED provider registration
 Boss module-agnostic audit
-full Boss Rust regression
+Boss lib regression                     116 / 116
+Boss backend regression                 583 / 583
 ```
 
-Fresh Live still must prove the complete real runtime birth inside the newly rebuilt image.
+Point 1 and Point 2 are **CLOSED / GREEN at source level**.
+
+Fresh Live must still prove install, Open, Tray, switches/settings, disable/enable, uninstall and reinstall with this single Test Module.
+
+The complete battery must then be repeated after installing N.E.E.B.L.E.S. OS through Calamares.
+
+Only after that single-module cycle is GREEN will a second repository with a different module identity be created from this same reference implementation to certify simultaneous multi-module isolation.
+
+The Test Module is a reference consumer/template. Python/Tk is implementation detail, not Boss architecture.
 
 ---
 
