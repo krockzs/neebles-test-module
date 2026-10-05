@@ -20,7 +20,7 @@ Current module schema:
 4
 ```
 
-The working tree contains the current runtime-birth adaptation and must be committed to a new immutable revision before the next Boss Registry/CUSTOM pin is finalized.
+The Point 1 + Point 2 reference adaptation is source-certified. Boss Registry and CUSTOM V2 select the module through an immutable Git revision; Fresh Live and installed-system acceptance remain separate later gates.
 
 ---
 
