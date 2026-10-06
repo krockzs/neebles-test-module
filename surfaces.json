@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "items": {
     "open.launcher": {
       "surface": "launcher",
@@ -8,6 +8,45 @@
         "control": "button",
         "action": "open",
         "label_key": "surface.open"
+      }
+    },
+    "open.tray": {
+      "surface": "tray",
+      "visible": true,
+      "data": {
+        "control": "button",
+        "action": "open",
+        "label_key": "surface.open"
+      }
+    },
+    "config.notify": {
+      "surface": "ui",
+      "require": {
+        "self": "active",
+        "modules": {}
+      },
+      "visible": true,
+      "data": {
+        "control": "button",
+        "action": "notify-demo",
+        "label_key": "features.notify"
+      }
+    },
+    "config.notify-switch": {
+      "surface": "ui",
+      "object_id": "notify-switch",
+      "require": {
+        "self": "open",
+        "modules": {}
+      },
+      "visible": true,
+      "data": {
+        "control": "switch",
+        "action_on": "feature-on",
+        "action_off": "feature-off",
+        "transition_on": "feature-on",
+        "transition_off": "feature-off",
+        "label_key": "features.notify_switch"
       }
     }
   }

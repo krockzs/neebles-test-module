@@ -20,7 +20,7 @@ Current module schema:
 4
 ```
 
-The current reference adaptation follows the governed MaterialBinding schema 2 architecture. Boss Registry and CUSTOM V2 select the module through an immutable Git revision; Fresh Live and installed-system acceptance remain mandatory final gates.
+The current reference adaptation follows the governed MaterialBinding schema 2 architecture. Boss Registry selects the module repository through an immutable module-source commit. Independently, Boss Preinstall authenticates an exact CUSTOM V2 revision that owns the package, material, runtime-world and Construction truth consumed by the installed module. Those are separate revision identities and must not be conflated. Fresh Live and installed-system acceptance remain mandatory final gates.
 
 ---
 
@@ -68,8 +68,9 @@ OS
     -> platform authorities/providers
 
 BUILD
-    -> image-side authority/declaration materialization
-    -> shared module territory
+    -> image-side materialization
+    -> recovery environment
+    -> ISO composition
 
 Boss
     -> Registry consumption
@@ -173,7 +174,7 @@ Conceptually:
 
 Do not use a floating branch as installed module truth.
 
-For Test Module, Boss Registry and CUSTOM Construction must reference the same committed revision.
+For Test Module, the Boss Registry commit pins the module-source revision. CUSTOM V2 has its own immutable revision, selected and authenticated by Boss for package, material, runtime-world and Construction truth. These are separate pins: coherence means that each consumer uses the exact immutable revision declared by its own contract, not that both SHA values are equal.
 
 ---
 
@@ -227,28 +228,50 @@ For required package files, filename/SHA256 must agree.
 
 ---
 
-# 7. Shared package pool
+# 7. MaterialBinding, package pools and RuntimeLease
 
-Module material is shared.
+CUSTOM V2 owns the exact global Essential package layer, the per-module package delta, material-integrity manifests, runtime-world truth and module Construction declaration.
 
-Canonical source territory:
-
-```text
-CUSTOM:
-runtime/modules/packages/
-runtime/modules/rootfs/
-```
-
-Observed installed/runtime territory:
+The productive Boss-side material territories are:
 
 ```text
-/opt/neebles-build/modules
+/opt/neebles-build/modules/packages/essentials/
+    -> permanent verified Essential DEB pool
+
+/opt/neebles-build/modules/packages/
+    -> permanent verified module-delta DEB pool
+
+/opt/neebles-build/modules/material/<module-id>/
+    -> persistent authenticated MaterialBinding
+
+/opt/neebles-build/modules/runtime-leases/
+    -> ephemeral independent RuntimeLeases
 ```
 
-Uninstall does not delete the shared package pool.
+The active MaterialBinding is module-specific installed truth. Schema 2 binds:
 
-There is no per-module package ownership/refcount model.
+```text
+module identity
+installed module version
+CUSTOM V2 revision
+Essential selector + manifest
+module-delta selector + manifest
+domestic-runtime.json + SHA256
+construction.json + SHA256
+```
 
+The binding does not duplicate the DEB payloads. Those remain in the permanent package pools.
+
+When a controlled module runtime is required, Boss creates a fresh RuntimeLease and composes Essential + module delta into that private lease rootfs. Concurrent executions therefore receive independent runtime territories.
+
+The following old shape is not productive architecture:
+
+```text
+/opt/neebles-build/modules/rootfs
+shared mutable domestic-runtime.json
+```
+
+Uninstall removes module-owned installed state and binding according to the transaction, but it does not erase the permanent certified DEB arsenal.
 ---
 
 # 8. Preinstall
@@ -261,13 +284,17 @@ Correct flow:
 
 ```text
 Boss install/update
-    -> read module package membership
-    -> verify existing package files
-    -> reuse valid package
-    -> obtain missing exact package
-    -> reject mismatched package
-    -> materialize module runtime material
+    -> immutable module-source selection from Registry
+    -> authenticate exact CUSTOM V2 revision
+    -> validate Essential membership + integrity
+    -> validate module-delta membership + integrity
+    -> validate domestic-runtime.json
+    -> validate Construction subject against module identity
+    -> reuse/download exact certified DEBs into permanent pools
+    -> produce MaterialBindingInput
+    -> transactionally activate MaterialBinding schema 2
     -> continue Lifecycle
+    -> create RuntimeLease only when runtime execution is required
 ```
 
 The module must not contain a hidden alternative installer for the same dependencies.
@@ -430,6 +457,36 @@ Launcher / command Open
 
 Boss contains no Test Module-specific launch branch.
 
+## Feature Lifecycle and Module IPC
+
+The tutorial Features reuse the same generic Lifecycle machinery.
+
+The Notify button resolves:
+
+```text
+config.notify
+    -> notify-demo
+    -> artillery: boss.module_ipc
+    -> objective: commands
+    -> munition.endpoint: notify
+    -> installed Commands contract
+    -> test.notify
+    -> Module IPC
+    -> Boss Notifications
+```
+
+The Notify switch is backed by the Lifecycle object `notify-switch`.
+
+```text
+initial_active: false
+feature-on  -> true
+feature-off -> false
+```
+
+Its canonical object state is committed only after the governed transition succeeds. Settings must not become a second owner of this functional state.
+
+The module selects the logical Commands endpoint. Boss owns the generic `boss.module_ipc` capability, authenticates the module identity and resolves the installed contract.
+
 ---
 
 # 12. Persistent runtime
@@ -563,7 +620,28 @@ Runtime advertisement is live availability only.
 
 # 16. Surfaces
 
-The current module exposes the Launcher Open surface.
+The current reference module uses Surface schema 2 and exposes four presentation items:
+
+```text
+open.launcher
+    -> Launcher Open button
+
+open.tray
+    -> Tray Open Surface
+
+config.notify
+    -> Config Feature button
+    -> require self active
+
+config.notify-switch
+    -> Config Feature switch
+    -> require self open
+    -> Lifecycle object notify-switch
+```
+
+`open.launcher` and `open.tray` project the same governed `open` action. The Tray projection does not create another Open implementation or another state authority.
+
+`config.notify` and `config.notify-switch` use `surface: ui`, so Boss presents them under Config -> Features rather than Modules.
 
 A surface is a presentation projection.
 
@@ -615,14 +693,18 @@ The UI must not become the persistence authority.
 
 # 18. Settings
 
-Current feature examples:
+Current module-owned Settings examples are:
 
 ```text
 features.option1
 features.option2
 ```
 
-The rule is:
+These Settings keys are distinct from the Boss `Config -> Features` Surface projections `config.notify` and `config.notify-switch`.
+
+The functional state of `notify-switch` belongs to the Lifecycle object `notify-switch`; it must not be duplicated into Settings.
+
+The Settings rule is:
 
 ```text
 writer
@@ -639,6 +721,8 @@ Persist first, project later.
 # 19. Tray
 
 The Test Module Tray provider is optional module behavior governed by Boss infrastructure without exposing its private technology to Boss.
+
+The module also publishes `open.tray` as a Tray Open Surface. It is a presentation-only projection of the same governed `open` action already used by `open.launcher`; it is independent from the Tray provider process itself.
 
 Its manifest declares:
 
@@ -700,6 +784,20 @@ Boss owns:
 - return routing.
 
 A module should not invoke a private host notification transport to bypass Boss.
+
+The tutorial `config.notify` button and `config.notify-switch` both reach the existing `notify` Commands endpoint through Lifecycle and `boss.module_ipc`. The runtime then emits the normal Module IPC notification request and waits for the Boss notification acknowledgement.
+
+This deliberately exercises the universal path:
+
+```text
+Surface
+    -> Lifecycle
+    -> boss.module_ipc
+    -> module runtime
+    -> Module IPC notification
+    -> Boss policy/validation
+    -> desktop notification
+```
 
 ---
 
@@ -827,11 +925,25 @@ private UI allowlist is independent from public Commands declaration
 public Commands remain Boss-governed
 UI has no Boss CLI dependency
 UI does not own Boss Module IPC
+Surface schema 2
+module-scoped Surface translations
+Config -> Features projection
+require self active
+require self open
+strict RuntimeRegistry-backed open resolution
+persistent surface-model projection
+persistent surface-action execution
+boss.module_ipc Lifecycle capability
+config.notify -> notify-demo -> commands.notify
+config.notify-switch -> notify-switch object
+feature-on / feature-off canonical Lifecycle state
+object state committed only after successful governed transition
+open.tray presentation projection
 ```
 
 These are source/local diagnostic results, not final system certification.
 
-Fresh Live must still prove install, Open, Tray, private UI intents, public Commands through Boss, switches/settings, disable/enable, uninstall and reinstall with this single Test Module.
+Fresh Live must still prove install, Launcher Open, Tray Open Surface, governed Tray provider birth, private UI intents, public Commands through Boss, Config -> Features visibility, active/open requirement gating, Notify button delivery, Notify switch transitions with canonical Lifecycle state, settings behavior, disable/enable, runtime close/reopen gating, uninstall and reinstall with this single Test Module.
 
 The complete battery must then be repeated after installing N.E.E.B.L.E.S. OS through Calamares.
 

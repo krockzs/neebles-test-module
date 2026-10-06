@@ -15,5 +15,7 @@
   "surface.open": "Open",
   "features.title": "Module Features",
   "features.option1": "Feature Option 1",
-  "features.option2": "Feature Option 2"
+  "features.option2": "Feature Option 2",
+  "features.notify": "Notify",
+  "features.notify_switch": "Notify switch"
 }

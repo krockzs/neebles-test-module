@@ -5,10 +5,47 @@
     "governor.uninstall": "uninstall",
     "governor.enable": "enable",
     "governor.disable": "disable",
-    "governor.open": "open"
+    "governor.open": "open",
+    "governor.notify-demo": "notify-demo"
   },
   "require": {},
-  "objects": {},
+  "objects": {
+    "notify-switch": {
+      "initial_active": false,
+      "transition_active": {
+        "feature-on": true,
+        "feature-off": false
+      },
+      "transitions": {
+        "feature-on": {
+          "operations": {
+            "notify": {
+              "artillery": "boss.module_ipc",
+              "objective": "commands",
+              "munition": {
+                "endpoint": "notify"
+              },
+              "tactics": {},
+              "intelligence": {}
+            }
+          }
+        },
+        "feature-off": {
+          "operations": {
+            "notify": {
+              "artillery": "boss.module_ipc",
+              "objective": "commands",
+              "munition": {
+                "endpoint": "notify"
+              },
+              "tactics": {},
+              "intelligence": {}
+            }
+          }
+        }
+      }
+    }
+  },
   "transitions": {
     "install": {
       "operations": {}
@@ -32,6 +69,19 @@
           "objective": "construction.step",
           "munition": {
             "step": "open-runtime"
+          },
+          "tactics": {},
+          "intelligence": {}
+        }
+      }
+    },
+    "notify-demo": {
+      "operations": {
+        "notify": {
+          "artillery": "boss.module_ipc",
+          "objective": "commands",
+          "munition": {
+            "endpoint": "notify"
           },
           "tactics": {},
           "intelligence": {}

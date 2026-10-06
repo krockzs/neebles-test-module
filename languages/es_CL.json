@@ -15,5 +15,7 @@
   "surface.open": "Abrir",
   "features.title": "Funciones del módulo",
   "features.option1": "Función de prueba 1",
-  "features.option2": "Función de prueba 2"
+  "features.option2": "Función de prueba 2",
+  "features.notify": "Notificar",
+  "features.notify_switch": "Switch de notificación"
 }
