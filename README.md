@@ -20,7 +20,7 @@ Current module schema:
 4
 ```
 
-The Point 1 + Point 2 reference adaptation is source-certified. Boss Registry and CUSTOM V2 select the module through an immutable Git revision; Fresh Live and installed-system acceptance remain separate later gates.
+The current reference adaptation follows the governed MaterialBinding schema 2 architecture. Boss Registry and CUSTOM V2 select the module through an immutable Git revision; Fresh Live and installed-system acceptance remain mandatory final gates.
 
 ---
 
@@ -407,9 +407,14 @@ The `open` transition executes:
 artillery: boss.workspace_execution
 objective: construction.step
 munition:
-    subject: test-module
     step: open-runtime
 ```
+
+The module does not declare its own Construction subject in Lifecycle.
+
+Boss injects the Governor-owned module identity into the prepared operation. `boss.workspace_execution` derives the Construction subject from that governed identity and accepts only the module-declared `step`.
+
+This prevents one module from selecting another module's Construction declaration.
 
 This means:
 
@@ -418,7 +423,8 @@ Launcher / command Open
     -> Governor
     -> Lifecycle
     -> generic workspace execution
-    -> CUSTOM Construction
+    -> Governor-owned module identity
+    -> MaterialBinding Construction
     -> certified module runtime world
 ```
 
@@ -535,9 +541,19 @@ events
 external
 ```
 
-The runtime discovers its endpoints from the contract.
+This is the public module Commands contract.
 
-Do not maintain a second manually diverging endpoint list.
+External callers reach these actions through Boss. Boss resolves the installed declaration, applies contract policy and invokes the registered runtime through Module IPC.
+
+The embedded module UI does not enumerate this public contract and does not self-invoke it.
+
+The UI uses a separate explicit private-intent map owned by the module runtime. Private UI intents may reuse the same internal endpoint implementation, but they do not acquire public Commands authority and cannot automatically inherit future contract capabilities.
+
+The runtime derives its public advertised endpoints from the Commands contract.
+
+Do not maintain a second manually diverging list for public Commands advertisement.
+
+`PRIVATE_UI_ENDPOINTS` is intentionally different: it is a private presentation allowlist owned by the module runtime. It is not a Commands declaration, does not advertise runtime capabilities to Boss and cannot inherit new public Commands automatically.
 
 Privilege policy remains installed-contract truth.
 
@@ -569,7 +585,29 @@ The current UI is implemented with Tk.
 
 That is not architectural.
 
-The UI consumes canonical module settings/state and sends intent back through governed paths.
+The UI is intentionally not a Boss client and receives no Boss CLI authority.
+
+Its private communication path is:
+
+```text
+UI
+    -> stdout JSON request
+    -> module runtime
+    -> boss.modules.ipc
+    -> Boss
+
+Boss / runtime result
+    -> module runtime
+    -> UI stdin JSON
+```
+
+The module runtime is the sole owner of the Boss Module IPC connection.
+
+The UI cannot open that socket directly, cannot execute the Boss CLI and cannot expand its own authority.
+
+This keeps presentation subordinate to the authenticated module runtime.
+
+The UI consumes canonical module settings/state and sends private presentation intents only to its own runtime. When an intent requires Boss-owned services such as Settings or Notifications, the runtime uses its authenticated Module IPC.
 
 The UI must not become the persistence authority.
 
@@ -762,41 +800,38 @@ Copy the contract relationships.
 
 ---
 
-# 26. Current certification status
+# 26. Current verification status
 
-Current source-side reference gates are GREEN for:
+Current local source diagnostics verify the reference shape for:
 
 ```text
 Schema 4
-Construction contract
+Construction declaration
 Essential layer                          59 DEBs
 Test Module delta                        32 DEBs
-MaterialBinding
+MaterialBinding schema 2
+Construction payload bound by SHA
 RuntimeLease
 runtime world modules.python3.13-tk
 module material integrity manifest
+Governor-owned module identity
 governor.open
 construction.step open-runtime
-persistent Open execution
+Lifecycle munition contains step only
 tray.construction_step tray-provider
-persistent Tray execution
-desktop-session projection
-strict session readonly grant
 boss.modules.ipc
 dynamic installed-runtime readonly projection
 runtime --intent open
-NEEBLES_* domestic environment sealing
-PID-incarnation Tray ownership
-process-group lifecycle ownership
-kernel SO_PEERCRED provider registration
-Boss module-agnostic audit
-Boss lib regression                     116 / 116
-Boss backend regression                 583 / 583
+private UI intents <-> Runtime channel
+private UI allowlist is independent from public Commands declaration
+public Commands remain Boss-governed
+UI has no Boss CLI dependency
+UI does not own Boss Module IPC
 ```
 
-Point 1 and Point 2 are **CLOSED / GREEN at source level**.
+These are source/local diagnostic results, not final system certification.
 
-Fresh Live must still prove install, Open, Tray, switches/settings, disable/enable, uninstall and reinstall with this single Test Module.
+Fresh Live must still prove install, Open, Tray, private UI intents, public Commands through Boss, switches/settings, disable/enable, uninstall and reinstall with this single Test Module.
 
 The complete battery must then be repeated after installing N.E.E.B.L.E.S. OS through Calamares.
 

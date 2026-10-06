@@ -3,16 +3,14 @@
 import json
 import os
 import queue
-import subprocess
 import sys
 import threading
+import uuid
 import tkinter as tk
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 LANGUAGE_MANIFEST = BASE_DIR / "languages" / "manifest.json"
-COMMANDS_CONTRACT = BASE_DIR / "contracts" / "commands.json"
-BOSS_CLI = Path(os.environ.get("NEEBLES_CLI", "/usr/local/bin/neebles"))
 
 
 def load_json(path):
@@ -30,20 +28,16 @@ def load_strings():
 
 STRINGS = load_strings()
 
-COMMANDS = [
-    name
-    for name, definition
-    in load_json(
-        COMMANDS_CONTRACT
-    )["endpoints"].items()
-    if (
-        definition.get(
-            "launcher"
-        ) is not True
-        and name != "setting"
-    )
+PRIVATE_UI_ACTIONS = [
+    "version",
+    "hello",
+    "notify",
+    "state",
+    "settings",
+    "toggle",
+    "events",
+    "external",
 ]
-
 
 root = tk.Tk()
 root.title(STRINGS.get("app.title", "N.E.E.B.L.E.S. Test Module"))
@@ -65,80 +59,36 @@ option1 = tk.BooleanVar(value=False)
 option2 = tk.BooleanVar(value=False)
 
 
-def boss_module_command(*arguments):
-    return subprocess.run(
-        [
-            str(BOSS_CLI),
-            "test-module",
-            *arguments,
-        ],
-        cwd=BASE_DIR,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-
-
-def canonical_settings():
-    completed = boss_module_command(
-        "settings"
-    )
-
-    if completed.returncode != 0:
-        raise RuntimeError(
-            completed.stderr.strip()
-            or "could not read canonical module settings"
+def send_runtime_request(message):
+    sys.stdout.write(
+        json.dumps(
+            message,
+            ensure_ascii=False,
+            separators=(",", ":"),
         )
-
-    payload = json.loads(
-        completed.stdout
+        + "\n"
     )
-
-    option1.set(
-        payload.get(
-            "features.option1"
-        ) == "true"
-    )
-
-    option2.set(
-        payload.get(
-            "features.option2"
-        ) == "true"
-    )
+    sys.stdout.flush()
 
 
 def request_feature(path, variable):
-    requested = bool(
-        variable.get()
-    )
+    requested = bool(variable.get())
 
     # Persist-first law:
-    # the local visual state is not authoritative.
-    variable.set(
-        not requested
+    # local visual state is not authoritative.
+    variable.set(not requested)
+
+    send_runtime_request(
+        {
+            "type": "ui_intent",
+            "id": str(uuid.uuid4()),
+            "intent": "setting",
+            "args": [
+                path,
+                "true" if requested else "false",
+            ],
+        }
     )
-
-    completed = boss_module_command(
-        "setting",
-        path,
-        (
-            "true"
-            if requested
-            else "false"
-        ),
-    )
-
-    if completed.returncode != 0:
-        result.delete(
-            "1.0",
-            "end",
-        )
-
-        result.insert(
-            "end",
-            completed.stderr
-            or "setting write failed",
-        )
 
 
 def runtime_reader():
@@ -164,37 +114,66 @@ def runtime_reader():
 def drain_runtime_events():
     while True:
         try:
-            message = (
-                RUNTIME_EVENTS
-                .get_nowait()
-            )
-
+            message = RUNTIME_EVENTS.get_nowait()
         except queue.Empty:
             break
 
-        if (
-            message.get("type")
-            != "settings_changed"
-        ):
+        message_type = message.get("type")
+
+        if message_type == "settings_changed":
+            path = message.get("path")
+            value = message.get("value")
+
+            if path == "features.option1":
+                option1.set(value == "true")
+            elif path == "features.option2":
+                option2.set(value == "true")
+
             continue
 
-        path = message.get("path")
-        value = message.get("value")
+        if message_type == "ui_result":
+            intent = message.get("intent", "")
+            response = message.get("response", {})
 
-        if path == "features.option1":
-            option1.set(
-                value == "true"
+            if intent == "setting":
+                payload = response.get("result") or {}
+                path = payload.get("path")
+                value = payload.get("value")
+
+                if path == "features.option1":
+                    option1.set(value == "true")
+                elif path == "features.option2":
+                    option2.set(value == "true")
+
+                if response.get("ok") is True:
+                    continue
+
+            result.delete("1.0", "end")
+            result.insert(
+                "end",
+                "test-module private UI "
+                + intent
+                + "\n\n",
+            )
+            result.insert(
+                "end",
+                json.dumps(
+                    response,
+                    ensure_ascii=False,
+                    indent=2,
+                )
+                + "\n",
+            )
+            continue
+
+        if message_type == "ui_error":
+            result.delete("1.0", "end")
+            result.insert(
+                "end",
+                message.get("message", "runtime request failed"),
             )
 
-        elif path == "features.option2":
-            option2.set(
-                value == "true"
-            )
-
-    root.after(
-        25,
-        drain_runtime_events,
-    )
+    root.after(25, drain_runtime_events)
 
 
 features = tk.LabelFrame(
@@ -246,48 +225,30 @@ tk.Checkbutton(
 )
 
 
-def run_command(command):
-    completed = boss_module_command(
-        command
-    )
-
-    result.delete(
-        "1.0",
-        "end",
-    )
-
+def run_ui_intent(intent):
+    result.delete("1.0", "end")
     result.insert(
         "end",
-        "neebles test-module "
-        + command
+        "test-module private UI "
+        + intent
         + "\n\n",
     )
 
-    if completed.stdout:
-        result.insert(
-            "end",
-            completed.stdout,
-        )
-
-    if completed.stderr:
-        result.insert(
-            "end",
-            completed.stderr,
-        )
-
-    result.insert(
-        "end",
-        "\nexit_code="
-        + str(completed.returncode)
-        + "\n",
+    send_runtime_request(
+        {
+            "type": "ui_intent",
+            "id": str(uuid.uuid4()),
+            "intent": intent,
+            "args": [],
+        }
     )
 
 
-for command in COMMANDS:
+for intent in PRIVATE_UI_ACTIONS:
     row = tk.Frame(root)
     row.pack(fill="x", padx=20, pady=5)
-    tk.Label(row, text=f"neebles test-module {command}", anchor="w", width=45).pack(side="left", fill="x", expand=True)
-    tk.Button(row, text=STRINGS.get("ui.execute", "Ejecutar"), width=12, command=lambda value=command: run_command(value)).pack(side="right")
+    tk.Label(row, text=f"test-module private UI {intent}", anchor="w", width=45).pack(side="left", fill="x", expand=True)
+    tk.Button(row, text=STRINGS.get("ui.execute", "Ejecutar"), width=12, command=lambda value=intent: run_ui_intent(value)).pack(side="right")
 
 threading.Thread(
     target=runtime_reader,

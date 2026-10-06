@@ -3,11 +3,13 @@
 import collections
 import json
 import os
+import queue
 import select
 import signal
 import socket
 import struct
 import subprocess
+import threading
 import sys
 import uuid
 from pathlib import Path
@@ -32,6 +34,19 @@ SOCKET_PATH = Path(
 
 STOP = False
 UI_PROCESS = None
+UI_REQUESTS = queue.Queue()
+
+PRIVATE_UI_ENDPOINTS = {
+    "version": "test.version",
+    "hello": "test.hello",
+    "notify": "test.notify",
+    "state": "test.state",
+    "settings": "test.settings",
+    "setting": "test.setting",
+    "toggle": "test.toggle",
+    "events": "test.events",
+    "external": "test.external",
+}
 
 EVENT_HISTORY = collections.deque(maxlen=MAX_EVENT_HISTORY)
 DEFERRED_MESSAGES = collections.deque()
@@ -249,6 +264,127 @@ def push_ui_message(message):
         ValueError,
     ):
         pass
+
+
+def read_ui_requests(process):
+    if process.stdout is None:
+        return
+
+    for line in process.stdout:
+        line = line.strip()
+
+        if not line:
+            continue
+
+        try:
+            message = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+
+        if isinstance(message, dict):
+            UI_REQUESTS.put(message)
+
+
+def push_ui_error(request_id, message):
+    push_ui_message(
+        {
+            "type": "ui_error",
+            "id": request_id,
+            "message": message,
+        }
+    )
+
+
+def handle_ui_request(stream, session_id, message):
+    request_id = message.get("id")
+
+    if (
+        not isinstance(request_id, str)
+        or not request_id.strip()
+    ):
+        push_ui_error(None, "UI request id is missing")
+        return
+
+    if message.get("type") != "ui_intent":
+        push_ui_error(request_id, "unsupported UI request type")
+        return
+
+    intent = message.get("intent")
+    args = message.get("args", [])
+
+    if not isinstance(intent, str) or not intent:
+        push_ui_error(request_id, "UI intent identity is missing")
+        return
+
+    if not isinstance(args, list) or not all(
+        isinstance(value, str)
+        for value in args
+    ):
+        push_ui_error(request_id, "UI intent args must be strings")
+        return
+
+    endpoint = PRIVATE_UI_ENDPOINTS.get(intent)
+
+    if endpoint is None:
+        push_ui_error(request_id, "UI requested an undeclared private intent")
+        return
+
+    if intent == "setting":
+        if len(args) != 2:
+            push_ui_error(request_id, "UI setting intent requires path and value")
+            return
+
+    elif args:
+        push_ui_error(request_id, "UI intent does not accept arguments")
+        return
+
+    invoke = {
+        "id": request_id,
+        "module": MODULE,
+        "session_id": session_id,
+        "contract": "private-ui",
+        "endpoint": endpoint,
+        "args": args,
+    }
+
+    try:
+        executed = execute_endpoint(
+            stream,
+            session_id,
+            invoke,
+        )
+    except (
+        EOFError,
+        OSError,
+        RuntimeError,
+        ValueError,
+        KeyError,
+        json.JSONDecodeError,
+    ) as error:
+        push_ui_error(request_id, str(error))
+        return
+
+    push_ui_message(
+        {
+            "type": "ui_result",
+            "id": request_id,
+            "intent": intent,
+            "response": executed,
+        }
+    )
+
+def drain_ui_requests(stream, session_id):
+    while True:
+        try:
+            message = UI_REQUESTS.get_nowait()
+        except queue.Empty:
+            return
+
+        handle_ui_request(
+            stream,
+            session_id,
+            message,
+        )
 
 
 def pong(stream, session_id):
@@ -828,7 +964,7 @@ def stop_handler(_signum, _frame):
 
 
 def launch_ui():
-    return subprocess.Popen(
+    process = subprocess.Popen(
         [
             sys.executable,
             str(
@@ -840,9 +976,18 @@ def launch_ui():
         cwd=BASE_DIR,
         env=os.environ.copy(),
         stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
         text=True,
         bufsize=1,
     )
+
+    threading.Thread(
+        target=read_ui_requests,
+        args=(process,),
+        daemon=True,
+    ).start()
+
+    return process
 
 
 def subscribe(
@@ -1022,6 +1167,11 @@ def main():
                 and UI_PROCESS.poll() is not None
             ):
                 UI_PROCESS = None
+
+            drain_ui_requests(
+                stream,
+                session_id,
+            )
 
             message = next_runtime_message(
                 stream

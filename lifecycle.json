@@ -31,7 +31,6 @@
           "artillery": "boss.workspace_execution",
           "objective": "construction.step",
           "munition": {
-            "subject": "test-module",
             "step": "open-runtime"
           },
           "tactics": {},
