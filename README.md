@@ -11,7 +11,7 @@ Its purpose is to show, with a working module, **how a consumer declares itself,
 Current module version:
 
 ```text
-1.2.2
+1.2.3
 ```
 
 Current module schema:
@@ -21,6 +21,26 @@ Current module schema:
 ```
 
 The current reference adaptation follows the governed MaterialBinding schema 2 architecture. Boss Registry selects the module repository through an immutable module-source commit. Independently, Boss Preinstall authenticates an exact CUSTOM V2 revision that owns the package, material, runtime-world and Construction truth consumed by the installed module. Those are separate revision identities and must not be conflated. Fresh Live and installed-system acceptance remain mandatory final gates.
+
+## CAST30 patch 1.2.3 — window close releases Open
+
+`governor.open` starts this module's persistent IPC runtime and its owned
+Tk window. In 1.2.2, closing the window ended the Tk child, but the parent
+`runtime.py` forgot its child and stayed registered. Boss correctly kept
+reporting `open`, leaving Open disabled in Boss UI, Launcher and Tray.
+
+In 1.2.3, when the owned UI child exits, the parent leaves its IPC loop,
+sends `unregister` for the authenticated session, and closes its socket.
+Boss then removes that exact RuntimeRegistry session and announces
+`runtime_dead`; its three surfaces recover `closed` and can Open again.
+An unrelated Tray provider is not stopped, and Boss Settings are untouched.
+A module that intentionally stays headless after closing its UI must declare
+and implement that different lifecycle explicitly; Boss must not infer
+window close from process names, UI toolkits or desktop heuristics.
+
+This source-only patch is not installed merely by modifying this repository.
+The Registry immutable source commit and CUSTOM V2 Construction source pins
+must be updated coherently and tested before publication and Live acceptance.
 
 ## CAST30 patch 1.2.2 — source staging
 
@@ -141,7 +161,7 @@ Current Test Module declares:
 
 - Schema 4;
 - module identity;
-- version 1.2.2;
+- version 1.2.3;
 - runtime entrypoint `runtime.py`;
 - Lifecycle;
 - Surfaces;
@@ -514,6 +534,60 @@ The child is reaped when it eventually exits.
 
 The module runtime itself remains responsible for its application behavior and cooperative shutdown protocol.
 
+## Mandatory tutorial contract: Open must have a matching Close
+
+An authenticated `Open` session has a complete lifecycle, not just a launch
+command. Every module author must declare and implement what *ends* that
+session. For this graphical Test Module, the owned Tk window represents the
+whole `Open` session: clicking its **X** ends the child UI process, so the
+parent `runtime.py` must exit its IPC loop, send `unregister` with the same
+module/session identity, and close the connection. If the process exits or
+the connection drops unexpectedly, Boss must still be able to release its
+registered runtime through the authenticated transport-disconnect path.
+
+```text
+Boss UI / Launcher / Tray (declared Open)
+    -> Boss Governor + module Lifecycle
+    -> RuntimeRegistry: closed -> opening -> open
+    -> module-owned GUI is shown
+    -> user closes GUI with X
+    -> module runtime detects the owned UI ended
+    -> authenticated IPC unregister + socket close
+    -> persistent Boss unregisters that runtime session
+    -> Boss publishes module.lifecycle / runtime_dead
+    -> RuntimeRegistry: closed
+    -> all declared Open controls query Boss again and become available
+```
+
+The module **does not send three UI-specific notifications**. It reports its
+own session's lifecycle to Boss; Boss alone publishes canonical runtime state
+to Boss UI, Launcher and Tray. Do not fake `closed` inside QML, infer process
+state from window titles/toolkits, or call another module's runtime controls.
+
+This rule does **not** mean that every GUI Close must stop a headless/background
+service. A module designed to keep working without its window must explicitly
+define its background session lifetime and whether an Open action raises an
+existing window or creates a new one; it must not leave a registered but
+unreachable foreground window accidentally. An optional Tray provider is a
+separate lifecycle and must not be stopped just because this Open GUI closes.
+Active/Inactive and Boss Settings are distinct and must remain unchanged.
+
+### Mandatory acceptance checks for future graphical modules
+
+- Open from Boss UI, Launcher, and Tray **where that control is declared**;
+  close the module GUI using **X** in each case.
+- Verify authenticated runtime removal, the `runtime_dead` event, and
+  `closed` / `open_available=true` when the module remains Active.
+- Verify that every declared Open control recovers without a second click;
+  surfaces hidden during close must recover when they reappear.
+- Verify that simultaneous Open requests produce **one** module runtime,
+  whereas different modules are independent.
+- Repeat Open -> X -> Open and confirm no orphaned IPC session remains.
+- Verify the unrelated Tray provider, Active/Inactive and persisted Settings
+  did not change because the user closed the GUI.
+- Verify abnormal child termination and runtime transport disconnection also
+  release stale runtime state. Source tests alone do not replace Fresh Live.
+
 ---
 
 # 13. Desktop session
@@ -658,9 +732,9 @@ config.notify-switch
 
 `open.launcher` and `open.tray` project the same governed `open` action. The Tray projection does not create another Open implementation or another state authority.
 
-`active` means the installed module is enabled; it does not require a running module IPC session. `open` requires `active` plus an authenticated runtime registered in the Boss RuntimeRegistry. Closing only the Tk window is not itself evidence that the persistent module runtime has stopped. These requirements are evaluated by Boss and never by module UI code.
+`active` means the installed module is enabled; it does not require a running module IPC session. `open` requires `active` plus an authenticated runtime registered in the Boss RuntimeRegistry. Closing the Tk window becomes evidence of the end of this module's Open session only when its owning runtime detects that exit and unregisters the authenticated IPC session (the 1.2.3 tutorial behavior). Boss must never infer runtime closure merely from a window disappearing. These requirements are evaluated by Boss and never by module UI code.
 
-**1.2.2 staging law:** This module-source revision becomes installable only after the Boss Registry and CUSTOM V2 Construction `fetch`/`checkout` declarations both select its new immutable commit. The standalone Test Module push does not silently retarget existing installations or modify Esbirro's pinned world.
+**1.2.3 integration law:** This module-source revision becomes installable only after the Boss Registry immutable source commit and CUSTOM V2 Construction `fetch`/`checkout` declarations select the certified 1.2.3 commit. A standalone Test Module push never retargets an existing installation or changes Esbirro's pinned runtime world.
 
 
 `config.notify` and `config.notify-switch` use `surface: ui`, so Boss presents them under Config -> Features rather than Modules.
@@ -676,6 +750,56 @@ Future modules may expose:
 - multiple UI/Launcher/Tray surfaces.
 
 Boss must remain generic.
+
+## Mandatory synchronization contract for optional surfaces
+
+Boss is the single owner of module state; **surfaces are views and action clients**.
+A declared optional control cannot invent an independent Active or Open state.
+
+- **Boss UI > Modules:** the installed module always has an **Open** control,
+  which may be disabled when no governed Open capability is available, when
+  inactive, or while its canonical runtime is opening/open. The installed
+  module also exposes Active/Inactive administration through Boss.
+- **Launcher and Tray:** module Open controls and other module-owned surface
+  actions exist **only if the installed module declares them**. Neither
+  surface may synthesize a missing module Open. Active/Inactive controls
+  synchronize wherever that surface presents them; the module is not
+  required to offer every optional surface/control.
+- **Active:** `ui.disabled_modules` is Boss's persistent authority. A request
+  from any available surface must be committed by Boss and reflected in
+  every other existing control, for both enable and disable. The operation's
+  pending/error states must not be confused with its final Active state.
+- **Open:** Boss `RuntimeRegistry` owns `closed`, `opening`, `open`. Its
+  single-flight protection allows at most **one Open runtime per module**,
+  regardless of whether Boss UI, Launcher or Tray initiated it. Different
+  modules remain independent. Closing this module's GUI with **X** must
+  release its authenticated runtime session and restore Open availability
+  on every declared surface while leaving Active unchanged.
+- **Events and recovery:** the module reports its lifecycle to Boss, never
+  to individual surfaces. Persistent Boss emits `module.lifecycle` on
+  canonical changes; clients re-query `boss surface-model`. An obscured,
+  disconnected or restarted surface re-reads canonical state upon return.
+  A delayed callback, failure or repeated click cannot become a second
+  authority or silently overwrite a fresher model.
+- **Visibility and Settings:** optional Launcher/Tray visibility is a
+  presentation preference, not an Active or Open transition. Hiding and
+  revealing a surface cannot start, terminate, enable or disable a module.
+  Tray provider lifetime is separate from the module's foreground Open.
+
+### Mandatory triplet acceptance when the module declares all three controls
+
+For **Active** and **Inactive** independently, verify each origin and both
+receivers: Boss UI -> Launcher + Tray; Launcher -> Boss UI + Tray; Tray ->
+Boss UI + Launcher. That yields twelve directional checks when all three
+surfaces expose Active/Inactive. When an optional control is absent,
+verify its absence instead of fabricating it.
+
+For **Open**, repeat with every declared origin; verify `opening` disables
+competing Open buttons, one runtime registers, **X** produces
+`runtime_dead`, and all existing Open controls become available again.
+Include rapid/repeated clicks, unrelated modules, hide/reveal, restart,
+failed actions and transient disconnection. Tests must verify the live UI,
+not merely the Rust state model or a static declaration.
 
 ---
 

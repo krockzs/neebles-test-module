@@ -1180,7 +1180,11 @@ def main():
                 UI_PROCESS is not None
                 and UI_PROCESS.poll() is not None
             ):
-                UI_PROCESS = None
+                # This Open session owns the UI process. Its exit must also
+                # end the authenticated Module IPC session. Keeping the
+                # parent alive here leaves Boss permanently saying "open".
+                # The optional Tray provider is a separate runtime.
+                break
 
             drain_ui_requests(
                 stream,

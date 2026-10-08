@@ -1,4 +1,4 @@
-"""Guard the N.E.E.B.L.E.S. Test Module 1.2.2 contract without host dependencies."""
+"""Guard the N.E.E.B.L.E.S. Test Module 1.2.3 contract without host dependencies."""
 import ast
 from collections import deque
 import json
@@ -23,7 +23,7 @@ class TestCast30ModuleContract(unittest.TestCase):
     def test_manifest_identity_and_pinned_version(self):
         self.assertEqual(self.manifest["schema"], 4)
         self.assertEqual(self.manifest["name"], "test-module")
-        self.assertEqual(self.manifest["version"], "1.2.2")
+        self.assertEqual(self.manifest["version"], "1.2.3")
         self.assertEqual(self.manifest["surfaces"], "surfaces.json")
         self.assertEqual(self.manifest["lifecycle"], "lifecycle.json")
         self.assertEqual(self.manifest["notifications"]["protocol"], 4)
@@ -108,7 +108,7 @@ class TestCast30ModuleContract(unittest.TestCase):
 
     def test_documentation_matches_surface_requirements(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        self.assertIn("Current module version:\n\n```text\n1.2.2\n```", readme)
+        self.assertIn("Current module version:\n\n```text\n1.2.3\n```", readme)
         subsection = readme.split("# 16. Surfaces", 1)[1].split("# 17. UI", 1)[0]
         self.assertEqual(subsection.count("-> require self active"), 2)
         self.assertEqual(subsection.count("-> require self open"), 2)
