@@ -11,7 +11,7 @@ Its purpose is to show, with a working module, **how a consumer declares itself,
 Current module version:
 
 ```text
-1.2.0
+1.2.1
 ```
 
 Current module schema:
@@ -126,7 +126,7 @@ Current Test Module declares:
 
 - Schema 4;
 - module identity;
-- version 1.2.0;
+- version 1.2.1;
 - runtime entrypoint `runtime.py`;
 - Lifecycle;
 - Surfaces;
@@ -625,13 +625,15 @@ The current reference module uses Surface schema 2 and exposes four presentation
 ```text
 open.launcher
     -> Launcher Open button
+    -> require self active
 
 open.tray
     -> Tray Open Surface
+    -> require self active
 
 config.notify
     -> Config Feature button
-    -> require self active
+    -> require self open
 
 config.notify-switch
     -> Config Feature switch
@@ -640,6 +642,11 @@ config.notify-switch
 ```
 
 `open.launcher` and `open.tray` project the same governed `open` action. The Tray projection does not create another Open implementation or another state authority.
+
+`active` means the installed module is enabled; it does not require a running module IPC session. `open` requires `active` plus an authenticated runtime registered in the Boss RuntimeRegistry. Closing only the Tk window is not itself evidence that the persistent module runtime has stopped. These requirements are evaluated by Boss and never by module UI code.
+
+**1.2.1 staging law:** This module-source revision becomes installable only after the Boss Registry and CUSTOM V2 Construction `fetch`/`checkout` declarations both select its new immutable commit. The standalone Test Module push does not silently retarget existing installations or modify Esbirro's pinned world.
+
 
 `config.notify` and `config.notify-switch` use `surface: ui`, so Boss presents them under Config -> Features rather than Modules.
 

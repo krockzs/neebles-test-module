@@ -8,6 +8,10 @@
         "control": "button",
         "action": "open",
         "label_key": "surface.open"
+      },
+      "require": {
+        "self": "active",
+        "modules": {}
       }
     },
     "open.tray": {
@@ -17,12 +21,16 @@
         "control": "button",
         "action": "open",
         "label_key": "surface.open"
+      },
+      "require": {
+        "self": "active",
+        "modules": {}
       }
     },
     "config.notify": {
       "surface": "ui",
       "require": {
-        "self": "active",
+        "self": "open",
         "modules": {}
       },
       "visible": true,

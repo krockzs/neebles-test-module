@@ -1,7 +1,7 @@
 {
   "schema": 4,
   "name": "test-module",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "entrypoint": "runtime.py",
   "lifecycle": "lifecycle.json",
   "surfaces": "surfaces.json",
