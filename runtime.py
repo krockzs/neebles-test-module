@@ -445,6 +445,20 @@ def handle_control_message(stream, session_id, message):
 
         return True
 
+    if message_type == "notification_closed":
+        # Boss sends this asynchronous callback after a notification closes.
+        # Treat it as protocol input, not a fatal unknown IPC message.
+        validate_identity(message, session_id)
+        record_event({
+            "topic": "notification",
+            "event": "closed",
+            "payload": {
+                "notification_id": message.get("notification_id"),
+                "reason": message.get("reason"),
+            },
+        })
+        return True
+
     if message_type == "shutdown":
         validate_identity(message, session_id)
 

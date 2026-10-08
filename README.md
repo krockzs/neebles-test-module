@@ -11,7 +11,7 @@ Its purpose is to show, with a working module, **how a consumer declares itself,
 Current module version:
 
 ```text
-1.2.1
+1.2.2
 ```
 
 Current module schema:
@@ -21,6 +21,21 @@ Current module schema:
 ```
 
 The current reference adaptation follows the governed MaterialBinding schema 2 architecture. Boss Registry selects the module repository through an immutable module-source commit. Independently, Boss Preinstall authenticates an exact CUSTOM V2 revision that owns the package, material, runtime-world and Construction truth consumed by the installed module. Those are separate revision identities and must not be conflated. Fresh Live and installed-system acceptance remain mandatory final gates.
+
+## CAST30 patch 1.2.2 — source staging
+
+This patch teaches the reference runtime to consume the authenticated
+`notification_closed` callback returned by Boss Notifications protocol 4.
+The event is recorded with its notification id and closing reason; foreign
+module or session identity remains rejected and unknown IPC messages remain
+unhandled. This is module-side protocol handling, not a new Boss capability.
+
+The module source is installable only after **both** the Boss Registry immutable
+source commit and CUSTOM V2 Construction `fetch`/`checkout` source selectors
+point to this exact new commit. This README does not claim that those pins
+have already been published or that Fresh Live/installed-system acceptance
+has passed. The certified Essential layer, module package delta and Python/Tk
+world remain unchanged by this source-only fix.
 
 ---
 
@@ -126,7 +141,7 @@ Current Test Module declares:
 
 - Schema 4;
 - module identity;
-- version 1.2.1;
+- version 1.2.2;
 - runtime entrypoint `runtime.py`;
 - Lifecycle;
 - Surfaces;
@@ -645,7 +660,7 @@ config.notify-switch
 
 `active` means the installed module is enabled; it does not require a running module IPC session. `open` requires `active` plus an authenticated runtime registered in the Boss RuntimeRegistry. Closing only the Tk window is not itself evidence that the persistent module runtime has stopped. These requirements are evaluated by Boss and never by module UI code.
 
-**1.2.1 staging law:** This module-source revision becomes installable only after the Boss Registry and CUSTOM V2 Construction `fetch`/`checkout` declarations both select its new immutable commit. The standalone Test Module push does not silently retarget existing installations or modify Esbirro's pinned world.
+**1.2.2 staging law:** This module-source revision becomes installable only after the Boss Registry and CUSTOM V2 Construction `fetch`/`checkout` declarations both select its new immutable commit. The standalone Test Module push does not silently retarget existing installations or modify Esbirro's pinned world.
 
 
 `config.notify` and `config.notify-switch` use `surface: ui`, so Boss presents them under Config -> Features rather than Modules.

@@ -1,5 +1,6 @@
-"""Guard the N.E.E.B.L.E.S. Test Module 1.2.1 contract without host dependencies."""
+"""Guard the N.E.E.B.L.E.S. Test Module 1.2.2 contract without host dependencies."""
 import ast
+from collections import deque
 import json
 from pathlib import Path
 import unittest
@@ -22,7 +23,7 @@ class TestCast30ModuleContract(unittest.TestCase):
     def test_manifest_identity_and_pinned_version(self):
         self.assertEqual(self.manifest["schema"], 4)
         self.assertEqual(self.manifest["name"], "test-module")
-        self.assertEqual(self.manifest["version"], "1.2.1")
+        self.assertEqual(self.manifest["version"], "1.2.2")
         self.assertEqual(self.manifest["surfaces"], "surfaces.json")
         self.assertEqual(self.manifest["lifecycle"], "lifecycle.json")
         self.assertEqual(self.manifest["notifications"]["protocol"], 4)
@@ -107,10 +108,51 @@ class TestCast30ModuleContract(unittest.TestCase):
 
     def test_documentation_matches_surface_requirements(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        self.assertIn("Current module version:\n\n```text\n1.2.1\n```", readme)
+        self.assertIn("Current module version:\n\n```text\n1.2.2\n```", readme)
         subsection = readme.split("# 16. Surfaces", 1)[1].split("# 17. UI", 1)[0]
         self.assertEqual(subsection.count("-> require self active"), 2)
         self.assertEqual(subsection.count("-> require self open"), 2)
+
+
+class TestCast30NotificationClosedCallback(unittest.TestCase):
+    """Test real runtime functions without importing the host UI/Tk runtime."""
+
+    def setUp(self):
+        source = (ROOT / "runtime.py").read_text(encoding="utf-8")
+        tree = ast.parse(source, filename="runtime.py")
+        required = {"validate_identity", "record_event", "handle_control_message"}
+        chosen = [node for node in tree.body
+                  if isinstance(node, ast.FunctionDef) and node.name in required]
+        self.assertEqual({node.name for node in chosen}, required)
+        isolated = ast.fix_missing_locations(ast.Module(body=chosen, type_ignores=[]))
+        self.history = deque(maxlen=32)
+        self.namespace = {"MODULE": "test-module", "EVENT_HISTORY": self.history}
+        exec(compile(isolated, "runtime.py/cast30-isolated", "exec"), self.namespace)
+        self.handle = self.namespace["handle_control_message"]
+
+    def callback(self, module="test-module", session="session-current"):
+        return {"type": "notification_closed", "module": module,
+                "session_id": session, "notification_id": 42, "reason": 1}
+
+    def test_closed_callback_consumed(self):
+        self.assertIs(self.handle(None, "session-current", self.callback()), True)
+
+    def test_closed_event_records_exact_payload(self):
+        self.handle(None, "session-current", self.callback())
+        self.assertEqual(list(self.history), [{"topic": "notification",
+                           "event": "closed", "payload": {"notification_id": 42,
+                           "reason": 1}}])
+
+    def test_foreign_module_or_session_rejected(self):
+        with self.assertRaises(RuntimeError):
+            self.handle(None, "session-current", self.callback(module="other"))
+        with self.assertRaises(RuntimeError):
+            self.handle(None, "session-current", self.callback(session="session-old"))
+        self.assertEqual(len(self.history), 0)
+
+    def test_unknown_message_remains_unhandled(self):
+        self.assertIs(self.handle(None, "session-current", {"type": "unrecognized"}), False)
+        self.assertEqual(len(self.history), 0)
 
 
 if __name__ == "__main__":
