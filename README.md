@@ -20,7 +20,7 @@ Current module schema:
 4
 ```
 
-The current reference adaptation follows the governed MaterialBinding schema 2 architecture. Boss Registry selects the module repository through an immutable module-source commit. Independently, Boss Preinstall authenticates an exact CUSTOM V2 revision that owns the package, material, runtime-world and Construction truth consumed by the installed module. Those are separate revision identities and must not be conflated. Fresh Live and installed-system acceptance remain mandatory final gates.
+The previous reference adaptation used governed MaterialBinding schema 2; see the Multi-RootFS contract section below for Boss 1.0.34. Boss Registry selects the module repository through an immutable module-source commit. Independently, Boss Preinstall authenticates an exact CUSTOM V2 revision that owns the package, material, runtime-world and Construction truth consumed by the installed module. Those are separate revision identities and must not be conflated. Fresh Live and installed-system acceptance remain mandatory final gates.
 
 ## CAST30 patch 1.2.3 — window close releases Open
 
@@ -260,6 +260,62 @@ membership != integrity
 ```
 
 For required package files, filename/SHA256 must agree.
+
+---
+
+## Multi-RootFS contract (Boss 1.0.34)
+
+The historical MaterialBinding **schema 2** description below documents the
+previous contract. Boss 1.0.34 introduces the versioned Multi-RootFS binding
+and explicit per-step RootFS selection. Do **not** use the historical schema 2
+section as a copy-and-paste template for a new module.
+
+**Separate authorities:** the module repository owns its program, manifest,
+Lifecycle, IPC and UI contracts. The CUSTOM material revision owns certified
+Essential DEBs, the module-specific package delta, membership/integrity
+manifests, runtime-world definitions and its canonical Construction recipe.
+Boss authenticates these inputs and is responsible for Preinstall, composing
+the runtime, Install/Update, rollback and RuntimeLease. The module must not
+install system dependencies itself.
+
+### New module checklist
+
+1. Choose a unique module ID and write a `manifest.json` declaring only the
+   actual Lifecycle, Commands, UI, Tray, notification and setting contracts.
+2. Implement the module-owned runtime and its lifecycle transitions. Persistent
+   sessions must have a matching governed Close that unregisters their session.
+3. Define a Construction recipe whose `subject` equals the module ID and whose
+   `rootfs` map declares each required named environment and world. Reference
+   the named RootFS explicitly on **each** runtime step (`rootfs` and `world`
+   must agree with the declared environment); Boss-owned Git acquisition
+   steps are separate from module runtime steps.
+4. In CUSTOM, identify the exact Essential package set and the module delta,
+   with their integrity manifests. Do not bundle a second unmanaged copy of
+   Essentials inside the module. Keep previously certified legacy RootFS
+   directories available for rollback investigation.
+5. Confirm the module Construction copy and CUSTOM's canonical Construction
+   recipe are equivalent in parsed JSON, not by textual key ordering.
+6. Publish the module source commit, then pin that exact immutable SHA in the
+   CUSTOM Construction Git fetch/checkout steps. A working-tree or branch
+   name is not an immutable release identity.
+7. Publish/certify the CUSTOM material revision, then bind that exact revision
+   in the registry/material selector. **Module-source SHA and CUSTOM-material
+   SHA are distinct and must never be substituted for one another.**
+8. On a disposable VM only, verify Preinstall, composed inventory/integrity,
+   Install, Open/Close, Tray, update, rollback, reinstall and isolation between
+   different module RootFS environments. Confirm UID/GID, privileged file
+   modes, and that permanent DEB pools are not erased by module uninstall.
+
+### Current Test Module example
+
+`construction.json` declares `python3.13-tk` under `rootfs` with world
+`modules.python3.13-tk`. Both `open-runtime` and `tray-provider` explicitly
+select that RootFS; `init`, `fetch` and `checkout` use `boss.git`. Those are
+examples, not hard-coded Boss requirements for future modules.
+
+The 59 Essential DEBs / 32 Test Module delta DEBs and 1.0.34 local checks are
+**not** a substitute for fresh end-to-end VM certification. No successful
+published 1.0.34 Install/Update/Rollback is claimed here.
 
 ---
 
