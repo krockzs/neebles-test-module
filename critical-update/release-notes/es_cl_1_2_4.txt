@@ -1,0 +1,8 @@
+N.E.E.B.L.E.S. Test Module 1.2.4
+
+Cambios de esta versión:
+- Se corrige la posición de la ventana Tray para que aparezca junto al cursor en X11 y permanezca dentro de los límites visibles de la pantalla.
+- Se incorporan Release Notes del módulo en español de Chile e inglés para el modal de actualización de Boss.
+- Se conserva el historial de cambios de la versión 1.2.3.
+
+Las notas se muestran tras una actualización real confirmada por Boss; una instalación inicial no muestra este modal. El módulo no reinicia Plasma.

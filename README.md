@@ -11,7 +11,7 @@ Its purpose is to show, with a working module, **how a consumer declares itself,
 Current module version:
 
 ```text
-1.2.3
+1.2.4
 ```
 
 Current module schema:
@@ -21,6 +21,23 @@ Current module schema:
 ```
 
 The previous reference adaptation used governed MaterialBinding schema 2; see the Multi-RootFS contract section below for Boss 1.0.34. Boss Registry selects the module repository through an immutable module-source commit. Independently, Boss Preinstall authenticates an exact CUSTOM V2 revision that owns the package, material, runtime-world and Construction truth consumed by the installed module. Those are separate revision identities and must not be conflated. Fresh Live and installed-system acceptance remain mandatory final gates.
+
+## CAST30 patch 1.2.4 — Tray placement and multilingual module notes
+
+- The module-owned Tk Tray window now anchors near the pointer on X11,
+  flips below the pointer if insufficient space exists above, and clamps
+  its geometry to Tk screen bounds. This changes presentation only;
+  Boss remains the Tray and settings authority.
+- `critical-update/release-notes/es_cl_1_2_4.txt` and
+  `en_us_1_2_4.txt` are authenticated module-source files for the
+  existing generic Boss module-update modal. Historical 1.2.3 notes
+  are retained. Initial installs do not display release notes.
+- Boss 1.0.39 reads the installed module's matching locale/version notes
+  only after confirming an actual version change. No extra module modal,
+  Plasma restart, or Boss-specific module branch is introduced.
+- Distribution still requires the new module source commit to be pinned
+  in CUSTOM V2 Construction and the Registry selection coherently.
+  This source patch does not itself publish or install the update.
 
 ## CAST30 patch 1.2.3 — window close releases Open
 

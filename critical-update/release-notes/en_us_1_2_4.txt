@@ -1,0 +1,8 @@
+N.E.E.B.L.E.S. Test Module 1.2.4
+
+Changes in this version:
+- Fixes Tray window placement near the pointer on X11 while keeping it within visible screen bounds.
+- Adds Chilean Spanish and English module Release Notes for Boss's existing update dialog.
+- Preserves the release history for version 1.2.3.
+
+Notes are displayed only after Boss confirms a real module update; initial installation does not show this dialog. Module updates do not restart Plasma.

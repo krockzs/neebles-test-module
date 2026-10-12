@@ -1,0 +1,9 @@
+N.E.E.B.L.E.S. Test Module 1.2.3
+
+Changes in this version:
+- Closing the module window now causes its parent runtime to recognize the UI child exit.
+- The module unregisters its IPC session and closes its socket.
+- Boss receives runtime_dead and returns the module to the closed state so Open becomes available again.
+- An independent Tray provider is not stopped, and Boss settings remain untouched.
+
+This version still requires publication and selection of the appropriate immutable Registry and CUSTOM V2 revisions before distribution.

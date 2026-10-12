@@ -1,0 +1,9 @@
+N.E.E.B.L.E.S. Test Module 1.2.3
+
+Cambios de esta versión:
+- Al cerrar la ventana del módulo, su runtime principal reconoce el cierre del proceso de interfaz.
+- El módulo libera su sesión IPC mediante unregister y cierra su socket.
+- Boss recibe runtime_dead y actualiza el estado del módulo a cerrado, permitiendo utilizar Open nuevamente.
+- No se detiene un proveedor Tray independiente ni se alteran los ajustes de Boss.
+
+Esta versión sigue requiriendo la publicación y selección de las revisiones inmutables correspondientes en Registry y CUSTOM V2 para su distribución.

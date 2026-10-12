@@ -238,6 +238,39 @@ def main():
 
     root.protocol("WM_DELETE_WINDOW", hide)
 
+    def position_popup():
+        # Mirror Boss X11 tray anchoring without querying global Boss state.
+        # Tk pointer coordinates and screen bounds are provided by Tk/X11.
+        root.update_idletasks()
+        width = max(root.winfo_reqwidth(), root.winfo_width(), 360)
+        height = max(root.winfo_reqheight(), root.winfo_height(), 220)
+        pointer_x = root.winfo_pointerx()
+        pointer_y = root.winfo_pointery()
+        screen_x = root.winfo_vrootx()
+        screen_y = root.winfo_vrooty()
+        screen_width = root.winfo_vrootwidth()
+        screen_height = root.winfo_vrootheight()
+        if screen_width <= 0 or screen_height <= 0:
+            raise RuntimeError("Tk screen bounds are unavailable")
+        margin = 10
+        desired_x = pointer_x - width + 18
+        desired_y = pointer_y - height - margin
+        if desired_y < screen_y:
+            desired_y = pointer_y + margin
+        max_x = screen_x + max(0, screen_width - width)
+        max_y = screen_y + max(0, screen_height - height)
+        x = max(screen_x, min(desired_x, max_x))
+        y = max(screen_y, min(desired_y, max_y))
+        root.geometry(f"{width}x{height}+{x}+{y}")
+
+    def show_popup(focus=False):
+        position_popup()
+        root.deiconify()
+        root.lift()
+        if focus:
+            root.focus_force()
+        publish_state(True)
+
     def process_events():
         while True:
             try:
@@ -247,16 +280,11 @@ def main():
 
             kind = message.get("type")
             if kind == "open":
-                root.deiconify()
-                root.lift()
-                publish_state(True)
+                show_popup()
             elif kind == "close":
                 hide()
             elif kind == "focus":
-                root.deiconify()
-                root.lift()
-                root.focus_force()
-                publish_state(True)
+                show_popup(focus=True)
             elif kind == "resize":
                 root.geometry(f"{int(message['width'])}x{int(message['height'])}")
                 publish_state(True)
