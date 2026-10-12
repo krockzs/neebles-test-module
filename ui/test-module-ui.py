@@ -27,6 +27,7 @@ def load_strings():
 
 
 STRINGS = load_strings()
+MODULE_VERSION = str(load_json(BASE_DIR / "manifest.json")["version"])
 
 PRIVATE_UI_ACTIONS = [
     "version",
@@ -40,11 +41,11 @@ PRIVATE_UI_ACTIONS = [
 ]
 
 root = tk.Tk()
-root.title(STRINGS.get("app.title", "N.E.E.B.L.E.S. Test Module"))
+root.title(f'{STRINGS.get("app.title", "N.E.E.B.L.E.S. Test Module")} {MODULE_VERSION}')
 root.geometry("760x560")
 root.minsize(680, 500)
 
-header = tk.Label(root, text=STRINGS.get("app.heading", "N.E.E.B.L.E.S. Test Module"), font=("Sans", 20, "bold"))
+header = tk.Label(root, text=f'{STRINGS.get("app.heading", "N.E.E.B.L.E.S. Test Module")} {MODULE_VERSION}', font=("Sans", 20, "bold"))
 header.pack(pady=(20, 6))
 
 subtitle = tk.Label(root, text=STRINGS.get("app.subtitle", "Dynamic contract test console"))

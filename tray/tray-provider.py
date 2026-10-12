@@ -262,6 +262,7 @@ def main():
         x = max(screen_x, min(desired_x, max_x))
         y = max(screen_y, min(desired_y, max_y))
         root.geometry(f"{width}x{height}+{x}+{y}")
+        root.update_idletasks()
 
     def show_popup(focus=False):
         position_popup()
