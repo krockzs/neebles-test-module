@@ -1,0 +1,9 @@
+N.E.E.B.L.E.S. Test Module 1.2.6
+
+- Show Tray can reconcile the provider without reopening the application.
+- Borderless popup with outside-click dismissal.
+- Open Test Module button tracks runtime state and disables while open.
+- Optional Test Module-owned user-session controller for governed opening and Linux login startup.
+- Module-owned persistent settings: tray.visible and tray.autostart.
+
+The session controller requires explicit user authorization and does not change Boss.

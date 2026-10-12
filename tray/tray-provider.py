@@ -17,6 +17,35 @@ SOCKET_PATH = Path(os.environ.get("NEEBLES_TRAY_SOCKET", f"/run/user/{os.geteuid
 EVENTS = queue.Queue()
 STOP = threading.Event()
 WRITE_LOCK = threading.Lock()
+CONTROLLER_SOCKET = Path(f"/run/user/{os.geteuid()}/neebles/test-module-controller.sock")
+
+
+def controller_request(action):
+    if action not in {"status", "open"}:
+        raise ValueError("invalid Test Module controller action")
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as controller:
+        controller.settimeout(24 if action == "open" else 8)
+        controller.connect(str(CONTROLLER_SOCKET))
+        controller.sendall((json.dumps({"action": action}) + "\n").encode("utf-8"))
+        controller.shutdown(socket.SHUT_WR)
+        with controller.makefile("r", encoding="utf-8") as reader:
+            line = reader.readline(4096)
+    if not line:
+        raise RuntimeError("Test Module controller is unavailable")
+    answer = json.loads(line)
+    if answer.get("ok") is not True:
+        raise RuntimeError(str(answer.get("error", "controller request rejected")))
+    return answer
+
+
+def load_tray_strings():
+    base = Path(__file__).resolve().parent.parent
+    info = json.loads((base / "languages/manifest.json").read_text(encoding="utf-8"))
+    language = os.environ.get("NEEBLES_LANGUAGE", info["default"]).split(".", 1)[0].replace("-", "_")
+    for entry in info["languages"]:
+        if entry["code"].replace("-", "_") == language:
+            return json.loads((base / "languages" / entry["file"]).read_text(encoding="utf-8"))
+    return json.loads((base / "languages" / next(x["file"] for x in info["languages"] if x["code"] == info["default"])).read_text(encoding="utf-8"))
 
 
 def send_line(stream, message):
@@ -208,11 +237,18 @@ def main():
     initial_autostart = settings_get("tray.autostart") == "true"
     initial_visible = settings_get("tray.visible") == "true"
 
-    # Each new desktop session starts hidden unless the module opted in.
-    # This choice is persisted in the module's Settings, not Boss config.
-    if not initial_autostart and initial_visible:
-        settings_set("tray.visible", "false")
-        initial_visible = False
+    # Boot identity disambiguates a user-triggered reconciliation from the
+    # first provider startup after reboot. In the same boot, turning on
+    # "Show Tray" must work even if Linux autostart is disabled.
+    boot_id = Path("/proc/sys/kernel/random/boot_id").read_text().strip()
+    if not boot_id:
+        raise RuntimeError("cannot determine Linux boot identity")
+    previous_boot_id = settings_get("tray.session_boot_id")
+    if previous_boot_id != boot_id:
+        settings_set("tray.session_boot_id", boot_id)
+        if not initial_autostart and initial_visible:
+            settings_set("tray.visible", "false")
+            initial_visible = False
     if not initial_visible and initial_autostart:
         settings_set("tray.autostart", "false")
 
@@ -220,6 +256,8 @@ def main():
 
     option1 = tk.BooleanVar(value=initial_option1)
     option2 = tk.BooleanVar(value=initial_option2)
+    ui_strings = load_tray_strings()
+    open_status = {"opened": False, "available": False, "busy": False, "pending": False}
 
     def publish_state(opened=None):
         send_line(
@@ -273,18 +311,64 @@ def main():
 
     tk.Checkbutton(root, text="Opción 1", variable=option1, command=toggle1).pack(anchor="w", padx=30, pady=(30, 8))
     tk.Checkbutton(root, text="Opción 2", variable=option2, command=toggle2).pack(anchor="w", padx=30, pady=8)
-    tk.Button(root, text="Botón de prueba", command=lambda: report_message("Botón de prueba presionado")).pack(pady=20)
+    tk.Button(root, text="Botón de prueba", command=lambda: report_message("Botón de prueba presionado")).pack(pady=(8, 4))
+
+    def controller_background(action):
+        try:
+            result = controller_request(action)
+            EVENTS.put({"type": "controller_result", "action": action, "result": result})
+        except Exception as error:
+            EVENTS.put({"type": "controller_result", "action": action, "error": str(error)})
+
+    def refresh_open_button():
+        state = "normal" if (open_status["available"] and
+                             not open_status["opened"] and
+                             not open_status["busy"]) else "disabled"
+        open_button.configure(state=state)
+
+    def on_open_pressed():
+        if open_status["opened"] or open_status["busy"] or not open_status["available"]:
+            return
+        open_status["busy"] = True
+        refresh_open_button()
+        threading.Thread(target=controller_background, args=("open",), daemon=True).start()
+
+    open_button = tk.Button(
+        root, text=ui_strings.get("surface.open_tray", "Abrir Test Module"),
+        command=on_open_pressed, state="disabled",
+    )
+    open_button.pack(pady=(3, 12))
+
+    def poll_open_status():
+        if root.state() != "withdrawn" and not open_status["pending"] and not open_status["busy"]:
+            open_status["pending"] = True
+            threading.Thread(target=controller_background, args=("status",), daemon=True).start()
+        root.after(1100, poll_open_status)
 
     def hide():
         if root.state() == "withdrawn":
             return
+        # Release the global X11 grab before withdrawing; otherwise clicks
+        # outside of the popup could remain captured after it disappears.
+        if root.grab_current() == root:
+            root.grab_release()
         root.withdraw()
         publish_state(False)
 
+    def dismiss_on_click(event):
+        # Unlike FocusOut, an active X11 pointer grab reports external clicks
+        # to the popup. We may then close without requiring any window X.
+        px, py = event.x_root, event.y_root
+        x, y = root.winfo_rootx(), root.winfo_rooty()
+        if not (x <= px < x + root.winfo_width() and
+                y <= py < y + root.winfo_height()):
+            hide()
+
     def dismiss_if_focus_lost():
-        # Defer until Tk has completed a possible focus transfer between
-        # controls *inside* the popup. Such transfers must not dismiss it.
-        if root.state() == "withdrawn":
+        # Under an X11 pointer grab, only an outside pointer click or Escape
+        # dismisses this popup. KWin focus notifications are not reliable for
+        # override-redirect windows; don't let them close it immediately.
+        if root.state() == "withdrawn" or root.grab_current() == root:
             return
         focused = root.focus_get()
         if focused is None or focused.winfo_toplevel() != root:
@@ -294,6 +378,7 @@ def main():
         root.after(60, dismiss_if_focus_lost)
 
     root.bind("<FocusOut>", on_focus_out, add="+")
+    root.bind("<ButtonPress>", dismiss_on_click, add="+")
     root.bind("<Escape>", lambda _event: hide(), add="+")
     root.protocol("WM_DELETE_WINDOW", hide)
 
@@ -331,10 +416,15 @@ def main():
         position_popup()
         root.deiconify()
         root.lift()
-        # An unmanaged popup needs explicit focus so an outside click
-        # generates FocusOut and dismisses it.
+        # Tk override-redirect windows do not consistently receive FocusOut
+        # from KWin. A temporary global pointer grab delivers outside clicks
+        # here, where dismiss_on_click releases it immediately.
         root.focus_force()
+        root.grab_set_global()
         publish_state(True)
+        if not open_status["pending"] and not open_status["busy"]:
+            open_status["pending"] = True
+            threading.Thread(target=controller_background, args=("status",), daemon=True).start()
 
     def process_events():
         while True:
@@ -344,6 +434,24 @@ def main():
                 break
 
             kind = message.get("type")
+            if kind == "controller_result":
+                action = message["action"]
+                failure = message.get("error")
+                if action == "status":
+                    open_status["pending"] = False
+                    open_status["available"] = failure is None
+                    if failure is None:
+                        open_status["opened"] = message["result"]["opened"] is True
+                elif action == "open":
+                    open_status["busy"] = False
+                    if failure is None:
+                        open_status["available"] = True
+                        open_status["opened"] = True
+                        hide()
+                    else:
+                        report_message("No se pudo abrir Test Module: " + failure)
+                refresh_open_button()
+                continue
             if kind == "open":
                 show_popup()
             elif kind == "close":
@@ -420,6 +528,7 @@ def main():
 
     publish_state(False)
     root.after(150, process_events)
+    root.after(1100, poll_open_status)
     root.mainloop()
     STOP.set()
 

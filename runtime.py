@@ -24,6 +24,26 @@ MODULE = "test-module"
 PROTOCOL = 1
 MAX_FRAME_SIZE = 16 * 1024 * 1024
 MAX_EVENT_HISTORY = 64
+TRAY_SOCKET_PATH = Path(f"/run/user/{os.geteuid()}/neebles/tray.sock")
+
+
+def reconcile_tray_provider():
+    # A session client requests Boss's existing *generic* reconciliation,
+    # never launches the module provider outside Governor/Construction.
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as stream:
+        stream.settimeout(12)
+        stream.connect(str(TRAY_SOCKET_PATH))
+        stream.sendall(b'{"type":"reconcile"}\n')
+        stream.shutdown(socket.SHUT_WR)
+        with stream.makefile("r", encoding="utf-8") as reader:
+            reply = reader.readline()
+    if not reply:
+        raise RuntimeError("Tray Manager returned no reconciliation response")
+    payload = json.loads(reply)
+    if payload.get("type") != "ack" or payload.get("event") != "reconcile":
+        raise RuntimeError(f"Tray reconciliation rejected: {payload}")
+
+
 
 SOCKET_PATH = Path(
     os.environ.get(
@@ -876,12 +896,25 @@ def execute_endpoint(
             path,
         )
 
+        if path == "tray.visible" and requested == "true":
+            # Keep the current-boot identity so provider reconciliation does
+            # not mistake this explicit Show action for an automatic login.
+            boot_id = Path("/proc/sys/kernel/random/boot_id").read_text().strip()
+            if not boot_id:
+                raise RuntimeError("cannot determine Linux boot identity")
+            settings_set(stream, session_id, "tray.session_boot_id", boot_id)
+
         persisted = settings_set(
             stream,
             session_id,
             path,
             requested,
         )
+
+        if (path == "tray.visible" and requested == "true") or (
+            path == "tray.autostart" and requested == "true"
+        ):
+            reconcile_tray_provider()
 
         return response(
             message,

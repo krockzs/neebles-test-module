@@ -1,0 +1,9 @@
+N.E.E.B.L.E.S. Test Module 1.2.6
+
+- Mostrar Tray puede reconciliar el proveedor sin reiniciar la aplicación.
+- Popup sin barra de título y cierre por clic exterior.
+- Botón Abrir Test Module con consulta del runtime y bloqueo mientras esté abierto.
+- Controlador opcional de sesión, propiedad de Test Module, para apertura gobernada e inicio con Linux.
+- Settings persistentes del módulo: tray.visible y tray.autostart.
+
+La habilitación del controlador de sesión requiere una acción explícita del usuario; no modifica Boss.

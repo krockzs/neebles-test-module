@@ -21,5 +21,6 @@
   "tray.title": "Bandeja del sistema",
   "tray.visible": "Mostrar Tray",
   "tray.autostart": "Iniciar Tray con Linux",
-  "surface.open_tray": "Abrir Test Module"
+  "surface.open_tray": "Abrir Test Module",
+  "tray.controller_unavailable": "Controlador de sesión no disponible"
 }

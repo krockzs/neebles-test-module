@@ -21,5 +21,6 @@
   "tray.title": "System Tray",
   "tray.visible": "Show Tray",
   "tray.autostart": "Start Tray with Linux",
-  "surface.open_tray": "Open Test Module"
+  "surface.open_tray": "Open Test Module",
+  "tray.controller_unavailable": "Session controller unavailable"
 }

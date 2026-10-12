@@ -1216,3 +1216,43 @@ via Tray Protocol 1; a future protocol capability would be necessary.
 No Boss source change or extra instance-launching workaround is introduced.
 
 As shipped, 1.2.5 remains subject to real upgrade/reboot verification.
+
+## Test Module 1.2.6 — user-session controller (opt-in)
+
+Test Module stays isolated in its governed RootFS. The Tray popup only has
+read-only access to `neebles/test-module-controller.sock` via a CUSTOM
+`session_readonly` grant. It never connects to Boss's administrative IPC.
+
+An **optional, explicit user-installed** controller is available in
+`tray/session-controller.py`. It runs as an ordinary desktop-user systemd
+service and exposes only two fixed operations for `test-module`:
+
+- `status`: query `neebles modules runtime status test-module` and report
+  whether the module's runtime is registered;
+- `open`: when not already open, call the existing
+  `neebles modules action test-module open` governor path.
+
+This host-side controller has a wider trust boundary than the sandboxed Tray.
+Installation is an explicit user opt-in: run
+`python3 tray/install-session-controller.py` **before** upgrading to 1.2.6,
+and verify `systemctl --user is-active neebles-test-module-session-controller.service`.
+The installer creates a per-user service and a copy of the controller under
+`~/.local/share/neebles/test-module/`; it never edits Boss, OS, or global systemd.
+Use `python3 tray/install-session-controller.py --remove` to disable it.
+
+The service is ordered before `neebles-tray-manager.service` and announces
+READY only when the controller socket exists. On session login it requests a
+finite Tray reconciliation only when the module's persisted
+`tray.visible` and `tray.autostart` are both `"true"`. The module itself
+remains the owner of these settings. This user-service setup is an intentional
+extra prerequisite for this Test Module experiment, **not** an automatic
+capability of Boss for every module.
+
+The Tray popup contains `Abrir Test Module`, disabled while the registered
+module runtime is open, reenabled after it closes. The button is disabled
+if the user controller is unavailable; no fallback launches the isolated
+runtime outside Governor.
+
+Real desktop acceptance is still required for popup outside-click dismissal,
+X11 focus behavior, systemd session startup, Settings persistence, and the
+upgrade/reboot cycle.

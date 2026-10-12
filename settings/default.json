@@ -9,6 +9,7 @@
   },
   "tray": {
     "visible": "false",
-    "autostart": "false"
+    "autostart": "false",
+    "session_boot_id": ""
   }
 }
