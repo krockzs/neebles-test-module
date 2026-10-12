@@ -1,0 +1,10 @@
+N.E.E.B.L.E.S. Test Module 1.2.7
+
+- Tray Open now reads authoritative Boss/Governor closed/opening/open and open_available state.
+- Open stays disabled while opening, already open, or denied by Governor.
+- The Tray popup initially disables Open until a fresh canonical status arrives.
+- The opt-in user-session controller can run the installed module code instead of a stale home-directory copy.
+
+After updating from 1.2.6, run once as your desktop user (without sudo):
+python3 /opt/neebles/modules/test-module/tray/install-session-controller.py
+This migrates the user systemd unit to installed code. Reboot afterward.

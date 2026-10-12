@@ -42,22 +42,49 @@ def cli(*args, timeout=12):
     return proc.stdout.strip()
 
 
-def is_open():
-    data = json.loads(cli("modules", "runtime", "status", MODULE, timeout=6))
-    if data.get("module") != MODULE:
-        raise RuntimeError("unexpected runtime identity")
-    return data.get("registered") is True
+def governor_open_snapshot():
+    # Consult the same authoritative snapshot used by Boss UI and Launcher.
+    # A closed but disabled module must NOT offer Open.
+    rows = json.loads(cli("boss", "surface-model", timeout=6))
+    if not isinstance(rows, list):
+        raise RuntimeError("invalid Governor Surface Model")
+    matches = [row for row in rows if isinstance(row, dict) and row.get("name") == MODULE]
+    if len(matches) != 1:
+        raise RuntimeError("Governor did not return exactly one owned module")
+    state = matches[0].get("runtime_state")
+    available = matches[0].get("open_available")
+    if state not in ("closed", "opening", "open") or not isinstance(available, bool):
+        raise RuntimeError("invalid authoritative Open projection")
+    if state != "closed" and available:
+        raise RuntimeError("inconsistent Governor Open projection")
+    return {"runtime_state": state, "open_available": available}
 
 
 def dispatch(action):
     if action == "status":
-        return {"ok": True, "opened": is_open()}
+        snapshot = governor_open_snapshot()
+        return {
+            "ok": True,
+            "opened": snapshot["runtime_state"] != "closed",
+            "runtime_state": snapshot["runtime_state"],
+            "open_available": snapshot["open_available"],
+        }
     if action == "open":
         with OPEN_LOCK:
-            if is_open():
-                return {"ok": True, "opened": True, "already_open": True}
+            # Governor is the single-flight authority for ALL open surfaces.
+            before = governor_open_snapshot()
+            if before["runtime_state"] != "closed":
+                return {"ok": True, "opened": True, "already_open": True, "open_available": False}
+            if not before["open_available"]:
+                return {"ok": False, "error": "Governor Open is not available"}
             cli("modules", "action", MODULE, "open", timeout=20)
-            return {"ok": True, "opened": True, "already_open": False}
+            after = governor_open_snapshot()
+            return {
+                "ok": True,
+                "opened": after["runtime_state"] != "closed",
+                "already_open": False,
+                "open_available": after["open_available"],
+            }
     return {"ok": False, "error": "unsupported action"}
 
 

@@ -1,0 +1,10 @@
+N.E.E.B.L.E.S. Test Module 1.2.7
+
+- El Tray consulta directamente los estados closed/opening/open y open_available del modelo canónico de Boss/Governor.
+- Abrir queda deshabilitado mientras el módulo abre, está abierto o Governor no autoriza otra apertura.
+- La ventana del Tray inicia con Abrir deshabilitado hasta obtener un estado nuevo.
+- El controlador de sesión puede ejecutarse desde el código instalado del módulo, evitando copias obsoletas en el home.
+
+Después de actualizar desde 1.2.6, ejecutar una vez como usuario (sin sudo):
+python3 /opt/neebles/modules/test-module/tray/install-session-controller.py
+Esto migra la unidad systemd del usuario al código instalado. Reiniciar después.

@@ -422,6 +422,9 @@ def main():
         root.focus_force()
         root.grab_set_global()
         publish_state(True)
+        # Fail closed while fetching a fresh Governor status for this popup.
+        open_status["available"] = False
+        refresh_open_button()
         if not open_status["pending"] and not open_status["busy"]:
             open_status["pending"] = True
             threading.Thread(target=controller_background, args=("status",), daemon=True).start()
@@ -439,15 +442,18 @@ def main():
                 failure = message.get("error")
                 if action == "status":
                     open_status["pending"] = False
-                    open_status["available"] = failure is None
+                    # Availability is Governor's decision, not socket reachability.
+                    open_status["available"] = (failure is None and
+                                                message["result"].get("open_available") is True)
                     if failure is None:
                         open_status["opened"] = message["result"]["opened"] is True
                 elif action == "open":
                     open_status["busy"] = False
                     if failure is None:
-                        open_status["available"] = True
-                        open_status["opened"] = True
-                        hide()
+                        open_status["available"] = message["result"].get("open_available") is True
+                        open_status["opened"] = message["result"].get("opened") is True
+                        if open_status["opened"]:
+                            hide()
                     else:
                         report_message("No se pudo abrir Test Module: " + failure)
                 refresh_open_button()

@@ -11,7 +11,7 @@ Its purpose is to show, with a working module, **how a consumer declares itself,
 Current module version:
 
 ```text
-1.2.4
+1.2.7
 ```
 
 Current module schema:
@@ -21,6 +21,30 @@ Current module schema:
 ```
 
 The previous reference adaptation used governed MaterialBinding schema 2; see the Multi-RootFS contract section below for Boss 1.0.34. Boss Registry selects the module repository through an immutable module-source commit. Independently, Boss Preinstall authenticates an exact CUSTOM V2 revision that owns the package, material, runtime-world and Construction truth consumed by the installed module. Those are separate revision identities and must not be conflated. Fresh Live and installed-system acceptance remain mandatory final gates.
+
+## Patch 1.2.7 — authoritative Governor Open projection
+
+Test Module's optional user-session controller reads the canonical Boss
+`boss surface-model` projection, using **both** `runtime_state` and
+`open_available`. `closed` alone does not authorize opening a disabled or
+otherwise unavailable module. `opening` and `open` block duplicate Open.
+The module-owned Tray popup starts with Open disabled until a fresh read
+succeeds, and checks the same state while visible. Governor still rejects
+concurrent Open attempts even during a polling race.
+
+The session controller's opt-in systemd user unit is updated to run the
+installed module's controller at
+`/opt/neebles/modules/test-module/tray/session-controller.py`, rather than
+an obsolete user-home snapshot. **Existing 1.2.6 users must explicitly run
+`python3 /opt/neebles/modules/test-module/tray/install-session-controller.py`
+once after the 1.2.7 module update** to migrate their user unit; a reboot
+alone does not rewrite an already installed unit. This does not modify Boss,
+or enable the helper without an explicit user action.
+
+Only source/contract behavior changes; Python/Tk packages, RootFS and all
+2,242 CUSTOM material entries remain unchanged. The installed-system
+cross-surface acceptance test is intentionally deferred until after the
+Boss 1.0.51 and module 1.2.7 updates and planned restarts.
 
 ## CAST30 patch 1.2.4 — Tray placement and multilingual module notes
 
