@@ -1190,3 +1190,29 @@ declare itself
 without adding module-specific source to Boss, the architecture is working.
 
 That is the purpose of N.E.E.B.L.E.S. Test Module.
+
+
+## Test Module 1.2.5 — module-owned Tray Settings and governed Open surface
+
+`tray.visible` and `tray.autostart` are String leaves of this module's canonical
+Settings, not Boss global configuration. The Tk UI sends a private `setting`
+intent, and runtime.py writes through authenticated module Settings. Hiding the
+Tray forces `tray.autostart=false`, and the autostart control is disabled while
+hidden. The Tray provider follows Settings notifications and updates its own
+StatusNotifier icon through the existing `set_visibility` session message.
+The provider remains independent from the foreground GUI.
+
+The module-owned Tk Tray popup has no normal window decoration/X button;
+it is anchored next to the cursor and dismisses on Escape or focus loss.
+
+The module already declares the **governed `open.tray` surface**. Its label is
+now localized as `Abrir Test Module`/`Open Test Module`, and Boss projection
+uses the same Governor and runtime-state gating as `open.launcher`: closed =
+Open available, opening/open = Open disabled. The module's IPC runtime
+unregisters when its Tk window is closed, enabling Open again. This surface
+is in the **NEEBLES Tray projection**, not an additional button inside the
+module's own Tk popup. Such a popup-owned button cannot invoke Governor Open
+via Tray Protocol 1; a future protocol capability would be necessary.
+No Boss source change or extra instance-launching workaround is introduced.
+
+As shipped, 1.2.5 remains subject to real upgrade/reboot verification.

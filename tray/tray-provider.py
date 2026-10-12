@@ -120,6 +120,34 @@ def settings_set(path, value):
     )
 
 
+def session_visibility(visible):
+    # The public session-client Tray API is independent of the registered
+    # provider stream. It updates this module's live SNI visibility only.
+    stream = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    stream.settimeout(5)
+    try:
+        stream.connect(str(SOCKET_PATH))
+        send_line(stream, {
+            "type": "set_visibility",
+            "tray_id": TRAY_ID,
+            "visible": bool(visible),
+        })
+        file = stream.makefile("r", encoding="utf-8")
+        try:
+            line = file.readline()
+        finally:
+            file.close()
+    finally:
+        stream.close()
+    if not line:
+        raise RuntimeError("Tray visibility request has no reply")
+    message = json.loads(line)
+    if message.get("type") == "error":
+        raise RuntimeError(message.get("message", "Tray visibility rejected"))
+    if message.get("type") != "ack" or message.get("event") != "set_visibility":
+        raise RuntimeError(f"unexpected Tray visibility response: {message}")
+
+
 def reader(file):
     try:
         while not STOP.is_set():
@@ -169,11 +197,26 @@ def main():
 
     root = tk.Tk()
     root.title("N.E.E.B.L.E.S. Test Module Tray")
+    # A Tray popup is not a conventional desktop window: no title bar or X.
+    # Override-redirect also keeps the popup independent from task switching.
+    root.overrideredirect(True)
     root.geometry("360x220")
     root.withdraw()
 
     initial_option1 = settings_get("features.option1") == "true"
     initial_option2 = settings_get("features.option2") == "true"
+    initial_autostart = settings_get("tray.autostart") == "true"
+    initial_visible = settings_get("tray.visible") == "true"
+
+    # Each new desktop session starts hidden unless the module opted in.
+    # This choice is persisted in the module's Settings, not Boss config.
+    if not initial_autostart and initial_visible:
+        settings_set("tray.visible", "false")
+        initial_visible = False
+    if not initial_visible and initial_autostart:
+        settings_set("tray.autostart", "false")
+
+    session_visibility(initial_visible)
 
     option1 = tk.BooleanVar(value=initial_option1)
     option2 = tk.BooleanVar(value=initial_option2)
@@ -233,9 +276,25 @@ def main():
     tk.Button(root, text="Botón de prueba", command=lambda: report_message("Botón de prueba presionado")).pack(pady=20)
 
     def hide():
+        if root.state() == "withdrawn":
+            return
         root.withdraw()
         publish_state(False)
 
+    def dismiss_if_focus_lost():
+        # Defer until Tk has completed a possible focus transfer between
+        # controls *inside* the popup. Such transfers must not dismiss it.
+        if root.state() == "withdrawn":
+            return
+        focused = root.focus_get()
+        if focused is None or focused.winfo_toplevel() != root:
+            hide()
+
+    def on_focus_out(_event):
+        root.after(60, dismiss_if_focus_lost)
+
+    root.bind("<FocusOut>", on_focus_out, add="+")
+    root.bind("<Escape>", lambda _event: hide(), add="+")
     root.protocol("WM_DELETE_WINDOW", hide)
 
     def position_popup():
@@ -265,11 +324,16 @@ def main():
         root.update_idletasks()
 
     def show_popup(focus=False):
+        if not focus and root.state() != "withdrawn":
+            # A second click on the Tray icon toggles the popup closed.
+            hide()
+            return
         position_popup()
         root.deiconify()
         root.lift()
-        if focus:
-            root.focus_force()
+        # An unmanaged popup needs explicit focus so an outside click
+        # generates FocusOut and dismisses it.
+        root.focus_force()
         publish_state(True)
 
     def process_events():
@@ -301,7 +365,15 @@ def main():
 
                 elif path == "features.option2":
                     option2.set(value == "true")
-
+                elif path == "tray.visible":
+                    desired = value == "true"
+                    if not desired:
+                        hide()
+                    session_visibility(desired)
+                    continue
+                elif path == "tray.autostart":
+                    # A session-start preference, not a live visibility flip.
+                    continue
                 else:
                     continue
 
@@ -321,6 +393,10 @@ def main():
                         "features.option2"
                     ) == "true"
                 )
+                visible = settings_get("tray.visible") == "true"
+                if not visible:
+                    hide()
+                session_visibility(visible)
 
                 publish_state(
                     root.state() != "withdrawn"

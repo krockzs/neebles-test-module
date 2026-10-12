@@ -17,5 +17,9 @@
   "features.option1": "Feature Option 1",
   "features.option2": "Feature Option 2",
   "features.notify": "Notify",
-  "features.notify_switch": "Notify switch"
+  "features.notify_switch": "Notify switch",
+  "tray.title": "System Tray",
+  "tray.visible": "Show Tray",
+  "tray.autostart": "Start Tray with Linux",
+  "surface.open_tray": "Open Test Module"
 }

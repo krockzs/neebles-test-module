@@ -1,0 +1,10 @@
+N.E.E.B.L.E.S. Test Module 1.2.5
+
+Changes in this version:
+- Persistent Show Tray switch in module-owned Settings.
+- Start Tray with Linux switch: hiding the Tray turns it off and disables it.
+- Undecorated popup without a close X; dismiss with Escape or focus loss.
+- The governed Open surface in the NEEBLES Tray is labeled "Open Test Module" and follows the module's real opened/closed state.
+- Existing demo controls and the Tray's independence from the main application are preserved.
+
+After updating, enable "Show Tray" from the module window to show its icon; enable "Start Tray with Linux" if you want it on KDE Plasma login.

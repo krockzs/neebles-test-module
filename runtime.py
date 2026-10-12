@@ -638,6 +638,8 @@ def execute_endpoint(
             for setting_path in (
                 "features.option1",
                 "features.option2",
+                "tray.visible",
+                "tray.autostart",
             ):
                 push_ui_message(
                     {
@@ -759,6 +761,8 @@ def execute_endpoint(
             session_id,
             "features.option2",
         )
+        tray_visible = settings_get(stream, session_id, "tray.visible")
+        tray_autostart = settings_get(stream, session_id, "tray.autostart")
 
         notify(
 
@@ -776,6 +780,8 @@ def execute_endpoint(
             {
                 "features.option1": option1,
                 "features.option2": option2,
+                "tray.visible": tray_visible,
+                "tray.autostart": tray_autostart,
             },
         )
 
@@ -807,6 +813,8 @@ def execute_endpoint(
         allowed = {
             "features.option1",
             "features.option2",
+            "tray.visible",
+            "tray.autostart",
         }
 
         if path not in allowed:
@@ -846,6 +854,21 @@ def execute_endpoint(
                         None,
                 },
             )
+
+        # The two tray preferences have a module-owned invariant:
+        # autostart cannot be on while visibility is off.
+        # Turn autostart off first so failures never leave that combination.
+        if path == "tray.visible" and requested == "false":
+            if settings_get(stream, session_id, "tray.autostart") == "true":
+                settings_set(stream, session_id, "tray.autostart", "false")
+
+        if path == "tray.autostart" and requested == "true":
+            if settings_get(stream, session_id, "tray.visible") != "true":
+                return response(message, ok=False, code=2, error={
+                    "kind": "tray_not_visible",
+                    "message": "show the tray before enabling autostart",
+                    "details": None,
+                })
 
         previous = settings_get(
             stream,
@@ -1161,6 +1184,8 @@ def main():
         for setting_path in (
             "features.option1",
             "features.option2",
+            "tray.visible",
+            "tray.autostart",
         ):
             push_ui_message(
                 {

@@ -20,7 +20,7 @@
       "data": {
         "control": "button",
         "action": "open",
-        "label_key": "surface.open"
+        "label_key": "surface.open_tray"
       },
       "require": {
         "self": "active",

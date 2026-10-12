@@ -17,5 +17,9 @@
   "features.option1": "Función de prueba 1",
   "features.option2": "Función de prueba 2",
   "features.notify": "Notificar",
-  "features.notify_switch": "Switch de notificación"
+  "features.notify_switch": "Switch de notificación",
+  "tray.title": "Bandeja del sistema",
+  "tray.visible": "Mostrar Tray",
+  "tray.autostart": "Iniciar Tray con Linux",
+  "surface.open_tray": "Abrir Test Module"
 }

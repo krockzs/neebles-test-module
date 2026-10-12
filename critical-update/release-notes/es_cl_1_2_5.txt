@@ -1,0 +1,10 @@
+N.E.E.B.L.E.S. Test Module 1.2.5
+
+Cambios de esta versión:
+- Switch Mostrar Tray persistente en los Settings del módulo.
+- Switch Iniciar Tray con Linux: al ocultar el Tray se desactiva y bloquea.
+- Popup sin marco ni botón X; se oculta con Escape o al perder foco.
+- La superficie gobernada Open del Tray muestra «Abrir Test Module» y sigue el estado abierto/cerrado del módulo.
+- Se mantienen los controles de prueba y la independencia del Tray respecto de la ventana principal.
+
+Después de la actualización, activa «Mostrar Tray» desde la ventana del módulo para mostrar su icono; activa «Iniciar Tray con Linux» si quieres verlo al entrar a KDE Plasma.

@@ -6,5 +6,9 @@
   "features": {
     "option1": "false",
     "option2": "false"
+  },
+  "tray": {
+    "visible": "false",
+    "autostart": "false"
   }
 }

@@ -58,6 +58,18 @@ RUNTIME_EVENTS = queue.Queue()
 
 option1 = tk.BooleanVar(value=False)
 option2 = tk.BooleanVar(value=False)
+tray_visible = tk.BooleanVar(value=False)
+tray_autostart = tk.BooleanVar(value=False)
+tray_autostart_control = None
+
+
+def sync_tray_controls():
+    if not tray_visible.get():
+        tray_autostart.set(False)
+    if tray_autostart_control is not None:
+        tray_autostart_control.configure(
+            state="normal" if tray_visible.get() else "disabled"
+        )
 
 
 def send_runtime_request(message):
@@ -129,6 +141,12 @@ def drain_runtime_events():
                 option1.set(value == "true")
             elif path == "features.option2":
                 option2.set(value == "true")
+            elif path == "tray.visible":
+                tray_visible.set(value == "true")
+                sync_tray_controls()
+            elif path == "tray.autostart":
+                tray_autostart.set(value == "true")
+                sync_tray_controls()
 
             continue
 
@@ -145,6 +163,12 @@ def drain_runtime_events():
                     option1.set(value == "true")
                 elif path == "features.option2":
                     option2.set(value == "true")
+                elif path == "tray.visible":
+                    tray_visible.set(value == "true")
+                    sync_tray_controls()
+                elif path == "tray.autostart":
+                    tray_autostart.set(value == "true")
+                    sync_tray_controls()
 
                 if response.get("ok") is True:
                     continue
@@ -224,6 +248,28 @@ tk.Checkbutton(
     padx=12,
     pady=(4, 8),
 )
+
+
+tray_options = tk.LabelFrame(
+    root, text=STRINGS.get("tray.title", "System Tray")
+)
+tray_options.pack(fill="x", padx=20, pady=(0, 12))
+
+tk.Checkbutton(
+    tray_options,
+    text=STRINGS.get("tray.visible", "Show Tray"),
+    variable=tray_visible,
+    command=lambda: request_feature("tray.visible", tray_visible),
+).pack(anchor="w", padx=12, pady=(6, 4))
+
+tray_autostart_control = tk.Checkbutton(
+    tray_options,
+    text=STRINGS.get("tray.autostart", "Start Tray with Linux"),
+    variable=tray_autostart,
+    command=lambda: request_feature("tray.autostart", tray_autostart),
+)
+tray_autostart_control.pack(anchor="w", padx=12, pady=(4, 8))
+sync_tray_controls()
 
 
 def run_ui_intent(intent):
