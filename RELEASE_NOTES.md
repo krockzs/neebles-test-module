@@ -1,3 +1,5 @@
+> **1.2.8 EN DESARROLLO (NO PUBLICADA).** `manifest.json` incluye el nuevo contrato `uninstall` schema 1 para Boss 1.0.52. La última versión histórica publicada permanece en 1.2.7. No cambiar CUSTOM ni Registry antes de la certificación integral.
+
 # N.E.E.B.L.E.S. Test Module — Release Notes and Integration Closure
 
 **Reference release:** `1.2.7` · **Status:** published module source and CUSTOM V2 / Boss Registry alignment; installed-system workflow reported working after the separate KDE startup repair.

@@ -1,0 +1,9 @@
+NEEBLES Test Module 1.2.8
+
+- Declares the new Boss 1.0.52 uninstall checklist.
+- The main application remains under Governor.
+- Declares the existing Boss-managed Tray and optional systemd-user session service.
+- Declares cleanup of module-owned cache and preserves the user's Settings choice.
+- The contract is independent of Python, Tk, Qt, or any module programming language.
+
+IMPORTANT: development candidate; certify on the installed system before publishing.

@@ -1,7 +1,7 @@
 {
   "schema": 4,
   "name": "test-module",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "entrypoint": "runtime.py",
   "lifecycle": "lifecycle.json",
   "surfaces": "surfaces.json",
@@ -22,5 +22,56 @@
   "notifications": {
     "protocol": 4
   },
-  "settings": "settings/default.json"
+  "settings": "settings/default.json",
+  "uninstall": {
+    "schema": 1,
+    "hardcoded": {
+      "session_service": "neebles-test-module-session-controller.service",
+      "cache_directory": "cache"
+    },
+    "main": "governor",
+    "extras": [
+      {
+        "id": "session-controller",
+        "type": "service",
+        "provider": "systemd-user",
+        "name": "$hardcoded.session_service",
+        "exec_start": "/usr/bin/python3.13 /opt/neebles/modules/test-module/tray/session-controller.py",
+        "required": false,
+        "stop": {
+          "disable": true,
+          "timeout_ms": 5000
+        },
+        "verify": "inactive",
+        "remove": true
+      },
+      {
+        "id": "tray",
+        "type": "governed",
+        "ref": "manifest.tray",
+        "required": false,
+        "verify": "terminated"
+      }
+    ],
+    "cleanup": [
+      {
+        "id": "module-cache",
+        "type": "directory",
+        "scope": "module-data",
+        "path": "$hardcoded.cache_directory",
+        "policy": "always"
+      },
+      {
+        "id": "local-settings",
+        "type": "settings",
+        "ref": "manifest.settings",
+        "policy": "user-choice"
+      }
+    ],
+    "failure": {
+      "unknown_process_owner": "abort",
+      "resource_still_running": "abort",
+      "cleanup_error": "abort"
+    }
+  }
 }

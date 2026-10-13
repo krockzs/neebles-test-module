@@ -993,3 +993,14 @@ DECLARE its identity and contracts
 **...without introducing any module-specific implementation into Boss.**
 
 That — and not Python/Tk, this module's icon, or its sample buttons — is the reusable N.E.E.B.L.E.S. module contract.
+
+
+---
+
+## 19. 1.2.8 development candidate — module-owned Uninstall checklist
+
+This section is a **development candidate**, not a revision of the published 1.2.7 snapshot above. `manifest.json` declares the new `uninstall` contract, schema 1, introduced by the Boss 1.0.52 source patch. The principal application remains controlled by Lifecycle/Governor. The Tray reference points to `manifest.tray`, and the optional session helper is a `systemd-user` service declared by its exact module-namespaced unit. `$hardcoded.session_service` is resolved with Lifecycle's existing `$namespace.key` syntax.
+
+A module that has no extras may omit `extras` entirely. Test Module's Python/Tk runtime is strictly an example; the contract does not define any required programming language. Only modules declaring valid, verifiable resources can have those resources stopped. Boss does not grep or kill all processes named `python3`. Filesystem cleanup is limited to relative paths under `shared/data/<module-id>`. Local settings keep their explicit preserve/remove UI choice.
+
+The new module version must be published together with the appropriate exact source/CUSTOM/Registry identities **only after** the Boss backend is compiled and actual first-attempt uninstalls are certified on Ryzen in both Settings modes.
