@@ -1,3 +1,5 @@
+**Current source candidate:** Test Module `1.2.12` — 253 locale options (32 keys each) sharing the Boss multibanderas language codes. Source tests passed 36/36 before version-bump; installed acceptance pending.
+
 # N.E.E.B.L.E.S. Test Module
 
 **Official reference implementation and developer tutorial**

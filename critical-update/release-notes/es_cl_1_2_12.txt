@@ -1,0 +1,8 @@
+NEEBLES Test Module 1.2.12
+
+- Añadidas 253 opciones de idioma/región con 32 claves por archivo, compatibles con el selector multibanderas de Boss.
+- La UI principal, notificaciones y el Tray siguen leyendo ui.language desde Settings del módulo; no se modificaron sus contratos ni ejecutables Python.
+- Se reutilizan traducciones para regiones que comparten idioma. Algunas frases de idiomas menos cubiertos permanecen en inglés provisionalmente.
+- No hay cambios en dependencias Python/Tk, paquetes Essential, material RootFS ni Construction.
+
+Guarda tu trabajo antes de pulsar Reboot. Para aceptar esta actualización, comprueba el cambio de idioma en UI y Tray con un Boss compatible (objetivo Boss 2.0.0). La prueba física sigue pendiente.
