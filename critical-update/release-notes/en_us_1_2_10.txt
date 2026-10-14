@@ -1,0 +1,9 @@
+NEEBLES Test Module 1.2.10
+
+- The Tray Open button now uses the declared, authenticated Boss Surface action.
+- No private session-controller service or socket is needed.
+- Show Tray / Start Tray with Linux and Governor Open/Close synchronization remain supported.
+- The generic Tray Manager owns login startup reconciliation.
+- The Uninstall contract retains cleanup of the legacy service when present.
+
+IMPORTANT: requires Boss with the new Tray Surface bridge and CUSTOM V2 without the old controller socket as a mandatory runtime resource.

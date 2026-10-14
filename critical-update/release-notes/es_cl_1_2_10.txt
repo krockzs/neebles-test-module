@@ -1,0 +1,9 @@
+NEEBLES Test Module 1.2.10
+
+- El botón Abrir del Tray utiliza ahora la acción Surface declarada y autenticada por Boss.
+- Ya no requiere el servicio ni el socket privados de session-controller.
+- Mantiene las preferencias Mostrar Tray / Iniciar Tray con Linux y la sincronización Open/Close.
+- La reconciliación al iniciar sesión es responsabilidad del Tray Manager genérico.
+- El contrato Uninstall conserva la limpieza del servicio antiguo, si existe.
+
+IMPORTANTE: requiere una versión de Boss con el nuevo puente Tray Surface y CUSTOM V2 sin el socket del controlador como recurso obligatorio.

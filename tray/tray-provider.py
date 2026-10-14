@@ -17,25 +17,26 @@ SOCKET_PATH = Path(os.environ.get("NEEBLES_TRAY_SOCKET", f"/run/user/{os.geteuid
 EVENTS = queue.Queue()
 STOP = threading.Event()
 WRITE_LOCK = threading.Lock()
-CONTROLLER_SOCKET = Path(f"/run/user/{os.geteuid()}/neebles/test-module-controller.sock")
+OPEN_SURFACE_ITEM = "open.tray"
 
 
-def controller_request(action):
-    if action not in {"status", "open"}:
-        raise ValueError("invalid Test Module controller action")
-    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as controller:
-        controller.settimeout(24 if action == "open" else 8)
-        controller.connect(str(CONTROLLER_SOCKET))
-        controller.sendall((json.dumps({"action": action}) + "\n").encode("utf-8"))
-        controller.shutdown(socket.SHUT_WR)
-        with controller.makefile("r", encoding="utf-8") as reader:
-            line = reader.readline(4096)
-    if not line:
-        raise RuntimeError("Test Module controller is unavailable")
-    answer = json.loads(line)
-    if answer.get("ok") is not True:
-        raise RuntimeError(str(answer.get("error", "controller request rejected")))
-    return answer
+def authoritative_open_snapshot(response):
+    """Fail closed on malformed, foreign or contradictory Governor projections."""
+    if not isinstance(response, dict) or response.get("type") != "surface_snapshot":
+        raise ValueError("not a governed Tray surface snapshot")
+    if response.get("tray_id") != TRAY_ID or response.get("item_id") != OPEN_SURFACE_ITEM:
+        raise ValueError("Tray surface snapshot owner mismatch")
+    state = response.get("runtime_state")
+    enabled = response.get("enabled")
+    allowed = response.get("open_available")
+    if state not in ("closed", "opening", "open") or type(enabled) is not bool or type(allowed) is not bool:
+        raise ValueError("invalid Governor runtime state or availability")
+    if state != "closed" and allowed:
+        raise ValueError("contradictory Governor surface availability")
+    return {
+        "opened": state in ("opening", "open"),
+        "available": enabled and allowed and state == "closed",
+    }
 
 
 def load_tray_strings():
@@ -313,12 +314,21 @@ def main():
     tk.Checkbutton(root, text="Opción 2", variable=option2, command=toggle2).pack(anchor="w", padx=30, pady=8)
     tk.Button(root, text="Botón de prueba", command=lambda: report_message("Botón de prueba presionado")).pack(pady=(8, 4))
 
-    def controller_background(action):
+    def request_open_status():
+        if open_status["pending"]:
+            return
+        open_status["pending"] = True
         try:
-            result = controller_request(action)
-            EVENTS.put({"type": "controller_result", "action": action, "result": result})
-        except Exception as error:
-            EVENTS.put({"type": "controller_result", "action": action, "error": str(error)})
+            # Same authenticated provider stream; no extra host socket or CLI.
+            send_line(stream, {
+                "type": "surface_query", "tray_id": TRAY_ID,
+                "item_id": OPEN_SURFACE_ITEM,
+            })
+        except OSError as error:
+            open_status["pending"] = False
+            open_status["available"] = False
+            report_message(f"Tray surface query failed: {error}")
+            refresh_open_button()
 
     def refresh_open_button():
         state = "normal" if (open_status["available"] and
@@ -331,7 +341,16 @@ def main():
             return
         open_status["busy"] = True
         refresh_open_button()
-        threading.Thread(target=controller_background, args=("open",), daemon=True).start()
+        try:
+            send_line(stream, {
+                "type": "surface_action", "tray_id": TRAY_ID,
+                "item_id": OPEN_SURFACE_ITEM, "action": "open",
+            })
+        except OSError as error:
+            open_status["busy"] = False
+            open_status["available"] = False
+            report_message(f"Tray Open failed: {error}")
+            refresh_open_button()
 
     open_button = tk.Button(
         root, text=ui_strings.get("surface.open_tray", "Abrir Test Module"),
@@ -341,8 +360,7 @@ def main():
 
     def poll_open_status():
         if root.state() != "withdrawn" and not open_status["pending"] and not open_status["busy"]:
-            open_status["pending"] = True
-            threading.Thread(target=controller_background, args=("status",), daemon=True).start()
+            request_open_status()
         root.after(1100, poll_open_status)
 
     def hide():
@@ -426,8 +444,7 @@ def main():
         open_status["available"] = False
         refresh_open_button()
         if not open_status["pending"] and not open_status["busy"]:
-            open_status["pending"] = True
-            threading.Thread(target=controller_background, args=("status",), daemon=True).start()
+            request_open_status()
 
     def process_events():
         while True:
@@ -437,26 +454,46 @@ def main():
                 break
 
             kind = message.get("type")
-            if kind == "controller_result":
-                action = message["action"]
-                failure = message.get("error")
-                if action == "status":
-                    open_status["pending"] = False
-                    # Availability is Governor's decision, not socket reachability.
-                    open_status["available"] = (failure is None and
-                                                message["result"].get("open_available") is True)
-                    if failure is None:
-                        open_status["opened"] = message["result"]["opened"] is True
-                elif action == "open":
-                    open_status["busy"] = False
-                    if failure is None:
-                        open_status["available"] = message["result"].get("open_available") is True
-                        open_status["opened"] = message["result"].get("opened") is True
-                        if open_status["opened"]:
-                            hide()
-                    else:
-                        report_message("No se pudo abrir Test Module: " + failure)
+            if kind == "surface_snapshot":
+                open_status["pending"] = False
+                try:
+                    authoritative = authoritative_open_snapshot(message)
+                except ValueError as error:
+                    open_status["available"] = False
+                    open_status["opened"] = False
+                    report_message(f"Invalid Governor snapshot: {error}")
+                else:
+                    open_status["available"] = authoritative["available"]
+                    open_status["opened"] = authoritative["opened"]
                 refresh_open_button()
+                continue
+            if kind == "surface_action_result":
+                if (message.get("tray_id") != TRAY_ID or
+                        message.get("item_id") != OPEN_SURFACE_ITEM or
+                        message.get("action") != "open"):
+                    open_status["available"] = False
+                    open_status["busy"] = False
+                    refresh_open_button()
+                    report_message("Foreign or invalid Tray surface action result")
+                    continue
+                open_status["busy"] = False
+                open_status["available"] = False
+                if message.get("ok") is True:
+                    # Governor accepted the request; re-query on next popup.
+                    open_status["opened"] = True
+                    hide()
+                else:
+                    report_message("Governor rejected Open: " + str(message.get("error", "unknown error")))
+                    if not open_status["pending"] and root.state() != "withdrawn":
+                        request_open_status()
+                refresh_open_button()
+                continue
+            if kind == "error":
+                open_status["pending"] = False
+                open_status["busy"] = False
+                open_status["available"] = False
+                refresh_open_button()
+                report_message("Tray Manager error: " + str(message.get("message", "unknown")))
                 continue
             if kind == "open":
                 show_popup()

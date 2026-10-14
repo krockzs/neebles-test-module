@@ -1159,3 +1159,37 @@ Automatic desktop-user provisioning from Boss UI requires a separately
 authorized generic Boss/OS capability that does not exist in 1.0.53. Do not
 embed `sudo`, `runuser`, arbitrary HOME mounts, or a hidden second launcher in
 the module to simulate one.
+
+
+---
+
+## 21. 1.2.10 development candidate — no module-owned session service
+
+Test Module's Tray Provider now calls the **generic, authenticated Tray Manager**
+`surface_query` and `surface_action` API for its own `open.tray` item.
+Boss checks the kernel peer identity, active registered Tray ownership,
+installed `surface=tray` item, and invokes its existing authoritative
+`surface-action` Governor dispatcher. The Tray runtime NEVER mounts Boss's
+administrative IPC or executes an unrestricted host CLI.
+
+CUSTOM V2 must remove the `neebles/test-module-controller.sock`
+`session_readonly` bind from the `tray-provider` Construction step;
+`neebles/tray.sock` remains REQUIRED. Manager startup independently retries
+its existing generic reconciliation on login.
+
+`tray.autostart`, `tray.visible`, `tray.session_boot_id` and the governed
+`open.tray` Surface retain their semantics. Provider still runs in the
+certified `modules.python3.13-tk` RootFS. The 1.2.9 controller implementation
+is retained only for historical/migration compatibility; 1.2.10 never starts
+or contacts its service. The optional uninstall `systemd-user` extra remains
+for safe cleanup of *legacy installed* controllers.
+
+**Migration:** On the installed Ryzen, UNINSTALL the existing 1.2.9 via
+Boss 1.0.53 **before** testing fresh 1.2.10. This allows the already-proven
+Uninstall contract to remove the old owned unit. Install Boss with the generic
+Tray bridge, then select the pinned 1.2.10 module/CUSTOM revision. Do not
+force a live 1.2.9 update onto an active legacy service during the first test.
+
+**Not certified:** This development candidate is NOT yet published into
+CUSTOM and Registry, and the coordinated Boss build has not passed its physical
+Ryzen install / enable / reboot / tray / Open / Close / uninstall cycle.

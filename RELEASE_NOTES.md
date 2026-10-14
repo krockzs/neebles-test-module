@@ -1,3 +1,5 @@
+> **1.2.10 CANDIDATA (NO PUBLICADA).** Tray Surface IPC autenticado via Boss Tray Manager. Sin servicio de controlador requerido. Publicar solo en conjunto con Boss y CUSTOM compatibles.
+
 > **1.2.9 CANDIDATA (NO PUBLICADA).** Endurece la reinstalación del controlador de sesión como operación explícita del usuario KDE. No publicar ni cambiar CUSTOM/Registry hasta certificar el ciclo instalado.
 
 # N.E.E.B.L.E.S. Test Module — Release Notes and Integration Closure
