@@ -16,7 +16,7 @@ class UninstallContractTests(unittest.TestCase):
         cls.contract = cls.manifest['uninstall']
 
     def test_manifest_version_does_not_regress(self):
-        self.assertEqual(self.manifest['version'], '1.2.11')
+        self.assertGreaterEqual(tuple(map(int, self.manifest['version'].split('.'))), (1, 2, 11))
         self.assertEqual(self.manifest['schema'], 4)
 
     def test_governor_remains_main(self):
