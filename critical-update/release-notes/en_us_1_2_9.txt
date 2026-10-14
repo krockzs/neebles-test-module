@@ -1,0 +1,9 @@
+NEEBLES Test Module 1.2.9
+
+- Hardens completion of desktop installation after Boss transactional uninstall.
+- The explicit desktop-user installer verifies the systemd-user unit, its socket, and the Governor response.
+- Refuses foreign units and symlinks; does not use sudo or broaden sandbox permissions.
+- Requires an explicit KDE-user setup step before enabling the Tray.
+- Does not change Boss or the Uninstall contract.
+
+IMPORTANT: development candidate; certify uninstall/reinstall on Ryzen before publishing.

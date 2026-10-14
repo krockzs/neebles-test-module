@@ -1,0 +1,9 @@
+NEEBLES Test Module 1.2.9
+
+- Mejora la finalizacion de instalacion de escritorio tras la desinstalacion transaccional de Boss.
+- El instalador explicito de usuario verifica la unidad systemd-user, su socket y la respuesta de Governor.
+- Evita reemplazar unidades ajenas y enlaces, sin usar sudo ni ampliar permisos del sandbox.
+- Requiere ejecutar el paso complementario del usuario KDE antes de habilitar el Tray.
+- No modifica Boss ni el contrato Uninstall.
+
+IMPORTANTE: version candidata; probar el ciclo de desinstalacion y reinstalacion en Ryzen.

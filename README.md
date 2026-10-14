@@ -1,7 +1,7 @@
 # N.E.E.B.L.E.S. Test Module
 
 **Official reference implementation and developer tutorial**
-**Current source / local installation:** `1.2.8` (Uninstall candidate, not published through the coordinated Registry/CUSTOM release) · **Module manifest:** schema `4` · **Uninstall:** schema `1` · **Surfaces:** schema `2` · **Commands:** schema `1`
+**Current development source:** `1.2.9` (reinstall/controller candidate, not published through Registry/CUSTOM) · **Ryzen last observed:** `1.2.8` (audit 2026-10-13) · **Module manifest:** schema `4` · **Uninstall:** schema `1` · **Surfaces:** schema `2` · **Commands:** schema `1`
 **Last published integration baseline:** Test Module `1.2.7` with Boss `1.0.51` · **Reference platform:** NEEBLES OS (Debian Trixie, KDE Plasma)
 
 > **Boss governs HOW. CUSTOM V2 certifies WHAT. The operating system supplies platform authority. The module declares WHAT IT DOES and implements its own behavior.**
@@ -1122,3 +1122,40 @@ A module without extras can omit `extras` if allowed by the applicable schema. T
 The Ryzen audit dated `2026-10-13 20:46` found the 1.2.8 manifest installed and equal to source, a running opt-in user service, Tray/Bubblewrap processes and controller socket. All **14 local Python tests** passed. It did not execute Uninstall and cannot certify resource retirement or rollback. The `systemd-user` removal, governed Tray/runtime shutdown, failure handling and both Settings modes must be demonstrated with before/after traces against an identified installed Boss build.
 
 Only after integral verification should the 1.2.8 release be coordinated with the correct immutable module source, CUSTOM V2 material/Construction identities and Boss Registry selection. **Updating this README does not change the manifest, running installation, Registry, CUSTOM or Boss build.**
+
+
+---
+
+## 20. 1.2.9 — Complete desktop install after TXN V5 uninstall
+
+The TXN V5 uninstall contract correctly removes the owned systemd-user controller.
+Its user service is NOT provisioned by the empty `install`/`enable` Lifecycle steps.
+The existing CUSTOM V2 `tray-provider` Construction step requires the controller
+socket as a *mandatory* `session_readonly` resource. Installing the module
+source/material without recreating the service is therefore not a complete
+desktop setup.
+
+The 1.2.9 candidate ships a hardened, idempotent desktop-user finalizer:
+
+```bash
+# After Boss UI installs/updates the module (NO sudo):
+python3 /opt/neebles/modules/test-module/scripts/complete-desktop-install.py --enable --reconcile
+
+# Or one orchestrated CLI path (depends on the installed Boss CLI privilege flow):
+python3 scripts/complete-desktop-install.py --install-with-boss --enable --reconcile
+
+# Read-only verification:
+python3 /opt/neebles/modules/test-module/tray/install-session-controller.py --check
+```
+
+Only the logged-in KDE user may install a systemd-user controller; the helper
+rejects root, foreign units, symlinks, and absent session authority. It confirms
+the authenticated socket and Governor status rather than assuming systemctl
+reported success. Successful implementation tests do NOT certify the Ryzen
+Uninstall → reinstall → Enable → Tray → Open cycle.
+
+**Important: no silent automatic installation through Boss UI is claimed.**
+Automatic desktop-user provisioning from Boss UI requires a separately
+authorized generic Boss/OS capability that does not exist in 1.0.53. Do not
+embed `sudo`, `runuser`, arbitrary HOME mounts, or a hidden second launcher in
+the module to simulate one.

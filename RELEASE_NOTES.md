@@ -1,4 +1,4 @@
-> **1.2.8 EN DESARROLLO (NO PUBLICADA).** `manifest.json` incluye el nuevo contrato `uninstall` schema 1 para Boss 1.0.52. La última versión histórica publicada permanece en 1.2.7. No cambiar CUSTOM ni Registry antes de la certificación integral.
+> **1.2.9 CANDIDATA (NO PUBLICADA).** Endurece la reinstalación del controlador de sesión como operación explícita del usuario KDE. No publicar ni cambiar CUSTOM/Registry hasta certificar el ciclo instalado.
 
 # N.E.E.B.L.E.S. Test Module — Release Notes and Integration Closure
 
@@ -149,3 +149,12 @@ The 1.2.7 source passed nine unit tests and was published; CUSTOM V2 and Boss Re
 | 1.2.7 | `critical-update/release-notes/es_cl_1_2_7.txt` | `critical-update/release-notes/en_us_1_2_7.txt` |
 
 **Publishing rule:** preserve historical authenticated note files. A future functional version must add its own Spanish/English pair and update the manifest, immutable source selection, CUSTOM V2 Construction/material version and Boss Registry. A docs-only amendment does not manufacture a new module version or trigger a new update modal.
+
+
+### 1.2.9 — Instalador de escritorio tras Uninstall TXN V5
+
+- El controlador opcional systemd-user se crea/actualiza de forma idempotente, sin sudo, usando una unidad atómica y validación de propietario.
+- La preparación verifica activación, socket Unix 0600, saludo de `status` y proyección `open_available` de Governor.
+- Un instalador complementario de usuario une instalación Boss por CLI (opcional) y setup del controlador antes de Enable/Tray.
+- **Límite conocido:** Boss UI 1.0.53 no dispone de una capacidad declarada para ejecutar setup systemd-user con identidad del usuario durante `governor.install`. Por eso la finalización tras Boss UI requiere una acción explícita del usuario; no se falsea un hook automático ni se ejecuta como root.
+- No altera Uninstall, Boss, ni Custom V2; requiere posterior repinning publicado y prueba real.
