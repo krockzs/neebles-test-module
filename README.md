@@ -1,8 +1,8 @@
 # N.E.E.B.L.E.S. Test Module
 
 **Official reference implementation and developer tutorial**
-**Reference version:** `1.2.7` · **Module manifest:** schema `4` · **Surfaces:** schema `2` · **Commands:** schema `1`
-**Reference platform:** NEEBLES OS (Debian Trixie, KDE Plasma) · **Known-good Boss release:** `1.0.51`
+**Current source / local installation:** `1.2.8` (Uninstall candidate, not published through the coordinated Registry/CUSTOM release) · **Module manifest:** schema `4` · **Uninstall:** schema `1` · **Surfaces:** schema `2` · **Commands:** schema `1`
+**Last published integration baseline:** Test Module `1.2.7` with Boss `1.0.51` · **Reference platform:** NEEBLES OS (Debian Trixie, KDE Plasma)
 
 > **Boss governs HOW. CUSTOM V2 certifies WHAT. The operating system supplies platform authority. The module declares WHAT IT DOES and implements its own behavior.**
 
@@ -30,16 +30,17 @@ The purpose of this README is to take a developer from an empty module repositor
 16. [Template checklist for a new module](#16-template-checklist-for-a-new-module)
 17. [Non-goals, security invariants and future evolution](#17-non-goals-security-invariants-and-future-evolution)
 18. [Historical compatibility and release chronology](#18-historical-compatibility-and-release-chronology)
+19. [1.2.8 Uninstall development candidate and pending certification](#19-128-uninstall-development-candidate-and-pending-certification)
 
 ---
 
 ## 1. Version, exact integration snapshot and verification
 
-This is a **reference snapshot**, not a rule that every future release must keep these SHAs. They identify the code and material published during the October 2026 integration:
+This table is the **historical, successfully published 1.2.7 integration snapshot**, not the current 1.2.8 worktree. The SHAs identify code/material selected by the coordinated October 2026 publication; a newer `main` commit or installed manifest does not retroactively change those pins:
 
 | Authority | Revision / identity | Meaning |
 |---|---|---|
-| Module | `1.2.7` | Version declared in `manifest.json` |
+| Published module baseline | `1.2.7` | Version of the historical, coordinated release (the current repository manifest is `1.2.8`) |
 | Module source | `5db32c4fdec61564415839851c18c092896e11bc` | Published functional reference revision; immutable source selection |
 | CUSTOM V2 | `3416f29e57785a520aef93e456daf71440f06e7e` | Published module material and Construction alignment |
 | Boss Registry | `4c729c4d72ee7dbdf8c25a1501826f557d8678e0` | Published `registry/modules.json` selecting module `1.2.7` |
@@ -50,6 +51,20 @@ This is a **reference snapshot**, not a rule that every future release must keep
 | Module material manifest | `2,242` entries | Effective filesystem integrity inventory for this example RootFS |
 
 **These are distinct identities.** The Boss Registry pins a **module source commit**, while Boss Preinstall independently resolves and records an exact **CUSTOM V2 material revision**. A README-only commit does not secretly replace the module source selected by the installed Registry. A future functional module release must deliberately advance all relevant references.
+
+### Current 1.2.8 candidate — audited 2026-10-13
+
+| Item | Observed state / source |
+|---|---|
+| Test Module source | `3835ca4ffbac847e28f8b9e105da7d7747c07c94`, `main` aligned with `origin/main`, no local changes in the audit |
+| Repository manifest | `test-module` version `1.2.8`, schema `4`, `uninstall` schema `1` |
+| Installed NEEBLES OS module | `/opt/neebles/modules/test-module/manifest.json` version `1.2.8`; bytes matched repository manifest (SHA-256 `c9c4e88b1290830bdc9a6831b737f0bd835f605af46bf11edd51b2927655238b`) |
+| Python source tests | `14/14` passed in the local audit; they validate contracts and source behavior, not a physical Uninstall |
+| Host resources observed | Opt-in `systemd-user` session controller active, Tray runtime/Bubblewrap and local controller socket present before Uninstall |
+| Boss TXN V5 development source | `66f0f7af33c4f320bb1bd1122d46937376ab8ab1` on `feat/txnv5-lifecycle-arsenal-bridge`; adds module-owned XDG Autostart retirement alongside the user service adapter |
+| Publication/certification | 1.2.8 is **not yet a coordinated, certified module release**. A live end-to-end Uninstall, recovery and both Settings choices remain pending. |
+
+The installed 1.2.8 copy in this audit proves local source selection, **not** that the Boss TXN V5 development branch is the currently running Boss binary. Do not conflate GitHub source, installed module, compiled Boss or Registry publication. The 1.2.7 table below remains useful, unchanged history.
 
 ### What was actually observed
 
@@ -145,11 +160,12 @@ neebles-test-module/
 ├── critical-update/
 │   ├── manifest.json                  # [] is valid
 │   └── release-notes/
-│       ├── es_cl_1_2_3.txt ... es_cl_1_2_7.txt
-│       └── en_us_1_2_3.txt ... en_us_1_2_7.txt
+│       ├── es_cl_1_2_3.txt ... es_cl_1_2_8.txt
+│       └── en_us_1_2_3.txt ... en_us_1_2_8.txt
 └── tests/
     ├── test_cast30_runtime_close.py
-    └── test_governor_open_127.py
+    ├── test_governor_open_127.py
+    └── test_uninstall_contract_128.py
 ```
 
 The complete **canonical material** lives in a different repository, CUSTOM V2, chiefly:
@@ -176,13 +192,13 @@ An example module does not need every optional file. A CLI-only Rust module migh
 
 The identity is a stable machine-readable module ID. This reference uses `test-module`; a future module must consistently replace it in its own paths, contracts and CUSTOM recipes. A display name, repository name or programming language is not an alternative machine identity.
 
-**Productive example (`manifest.json`, abridged but structurally faithful):**
+**Current productive declaration (`manifest.json`, 1.2.8 candidate):**
 
 ```json
 {
   "schema": 4,
   "name": "test-module",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "entrypoint": "runtime.py",
   "lifecycle": "lifecycle.json",
   "surfaces": "surfaces.json",
@@ -200,12 +216,65 @@ The identity is a stable machine-readable module ID. This reference uses `test-m
     "protocol": 1,
     "construction_step": "tray-provider"
   },
-  "notifications": { "protocol": 4 },
-  "settings": "settings/default.json"
+  "notifications": {
+    "protocol": 4
+  },
+  "settings": "settings/default.json",
+  "uninstall": {
+    "schema": 1,
+    "hardcoded": {
+      "session_service": "neebles-test-module-session-controller.service",
+      "cache_directory": "cache"
+    },
+    "main": "governor",
+    "extras": [
+      {
+        "id": "session-controller",
+        "type": "service",
+        "provider": "systemd-user",
+        "name": "$hardcoded.session_service",
+        "exec_start": "/usr/bin/python3.13 /opt/neebles/modules/test-module/tray/session-controller.py",
+        "required": false,
+        "stop": {
+          "disable": true,
+          "timeout_ms": 5000
+        },
+        "verify": "inactive",
+        "remove": true
+      },
+      {
+        "id": "tray",
+        "type": "governed",
+        "ref": "manifest.tray",
+        "required": false,
+        "verify": "terminated"
+      }
+    ],
+    "cleanup": [
+      {
+        "id": "module-cache",
+        "type": "directory",
+        "scope": "module-data",
+        "path": "$hardcoded.cache_directory",
+        "policy": "always"
+      },
+      {
+        "id": "local-settings",
+        "type": "settings",
+        "ref": "manifest.settings",
+        "policy": "user-choice"
+      }
+    ],
+    "failure": {
+      "unknown_process_owner": "abort",
+      "resource_still_running": "abort",
+      "cleanup_error": "abort"
+    }
+  }
 }
 ```
 
-The `contracts` array advertises contract types. Boss validates installed declarations; it does **not** reverse-engineer Python methods or invent unspecified capabilities. The historical top-level `manifest.commands` shape is **obsolete** for this reference. Public Commands belong inside the declared `contracts` array.
+The `contracts` array advertises contract types. Boss validates installed declarations; it does **not** reverse-engineer Python methods or invent unspecified capabilities. The historical top-level `manifest.commands` shape is **obsolete** for this reference. Public Commands belong inside the declared `contracts` array. The 1.2.8 `uninstall` schema is documented in §19; its declared extras and cleanup are not auto-installed merely because they appear in a manifest.
 
 `tray.construction_step` must name an actual step in the certified CUSTOM Construction recipe. If a module has no Tray, do not declare a provider or reserve a fictitious construction step.
 
@@ -653,13 +722,15 @@ systemctl --user show neebles-test-module-session-controller.service \
 ~/.local/share/neebles/test-module/session-controller.py
 ```
 
-That stale snapshot could return only `{'ok': True, 'opened': False}` — without `open_available`. A 1.2.7 popup then remained Disabled despite Governor reporting `closed/true`. Installing module 1.2.7 **does not rewrite an existing user unit**. After the module update, run the 1.2.7 installer above once to point the user service at the installed module's actual `session-controller.py`; then recheck status and restart the session as required. Do not try to repair this by changing Governor, editing a sandbox bind mount or publishing an unnecessary 1.2.8.
+That stale snapshot could return only `{'ok': True, 'opened': False}` — without `open_available`. A 1.2.7 popup then remained Disabled despite Governor reporting `closed/true`. Installing module 1.2.7 **does not rewrite an existing user unit**. After the module update, run the 1.2.7 installer above once to point the user service at the installed module's actual `session-controller.py`; then recheck status and restart the session as required. Do not try to repair this by changing Governor or editing a sandbox bind mount. This was the historical 1.2.7 diagnosis; the later 1.2.8 candidate introduces a distinct Uninstall contract and does not retroactively change the diagnosis.
 
-Removing this helper requires a deliberate user action:
+**Removal policy depends on the installed Boss version.** For the 1.2.7/Boss 1.0.51 historical workflow, users could explicitly remove the opt-in helper with:
 
 ```bash
 python3 /opt/neebles/modules/test-module/tray/install-session-controller.py --remove
 ```
+
+For the **1.2.8 Uninstall candidate with a compatible TXN V5 Boss**, the module declares this `systemd-user` unit as module-owned, with `stop.disable=true`, `remove=true` and `verify=inactive`. Boss is intended to stop, disable, verify and retire the declared unit as part of its governed Uninstall; the user should **not** be instructed to run a separate helper-removal command after a successful certified transaction. This path has not yet passed the installed-system Uninstall acceptance matrix (§14 and §19). The opt-in installation of the helper remains a distinct explicit action; the Uninstall declaration does not silently install it.
 
 A future production module should decide explicitly whether a host-user helper is necessary. It is **not** part of the minimum NEEBLES module ABI.
 
@@ -757,12 +828,14 @@ The module owns `critical-update/manifest.json`, currently a valid empty instruc
 
 An empty manifest does **not** mean “no update”: it means there are no additional declared Critical Update instructions for that release. Do not insert no-op commands just to make the list nonempty.
 
-The module's **versioned, authenticated** notes are under:
+The last coordinated **published** release has versioned, authenticated notes under:
 
 ```text
 critical-update/release-notes/es_cl_1_2_7.txt
 critical-update/release-notes/en_us_1_2_7.txt
 ```
+
+The **1.2.8 candidate** also contains `es_cl_1_2_8.txt` and `en_us_1_2_8.txt`; their presence in source does not mean the version was published through CUSTOM/Registry or shown in an installed update modal.
 
 Historical note pairs for 1.2.3–1.2.6 are intentionally retained, so prior changes remain auditable. Boss's generic module-update presentation reads the matching installed source/version/locale notes **for a real version transition**; an initial Install does not falsely display an Update note and reinstalling the same version must not fabricate a new change.
 
@@ -772,9 +845,13 @@ See the repository's `critical-update/release-notes/` for the actual per-version
 
 ### Uninstall/reinstall
 
-The Boss transaction removes the module's governed installed state and respects the user's settings-removal choice. It does **not** erase the permanent shared Essential/dependency pools. A voluntarily installed *user* service (like this demonstration's session controller) may require explicit removal/cleanup by the user; do not infer that deleting the module's directory rewrites `~/.config/systemd/user` for them.
+Uninstall is a **Boss-owned transaction**, not a call to an arbitrary module-specific cleanup script. The module describes governed resources in `manifest.json`, and the compatible Boss implementation must verify ownership and route supported cleanup operations through the appropriate Lifecycle Arsenal adapters. The principal runtime and declared Tray are governed separately from the optional `systemd-user` controller. A successful Uninstall must not leave a module-owned service, its executable process, Tray/Bubblewrap runtime or active controller socket behind.
 
-Rollback, clean uninstall/reinstall, cross-module isolation and multi-architecture package changes must be tested separately before calling them universally certified.
+For Test Module 1.2.8, the requested policy is to stop/disable and retire only the exact module-owned `neebles-test-module-session-controller.service` unit, including its user-service enablement symlink, once the transaction passes its safety gates. **Do not remove unrelated units or kill all `python3` processes.** No module-owned XDG Autostart file is declared by Test Module; that new generic Boss adapter must not invent one. A different module may legitimately use XDG Autostart or other explicitly supported resources. Unknown owners or unverified running resources must fail safely rather than be forcibly removed.
+
+User Settings follow an explicit preserve/remove choice. The transaction does **not** delete shared Essential/dependency pools. Rollback before irreversible commit must restore integrity before restarting services that were active beforehand; failures after commit are not an excuse to reanimate a partly removed installation.
+
+**Certification status:** the 2026-10-13 audit observed the 1.2.8 installed manifest and live resources, and 14 passing Python tests. It did **not** run an actual Uninstall, certify all process/Tray shutdown paths or prove the rollback and both Settings choices. Those tests are pending, and the TXN V5 Boss branch is not automatically the installed binary.
 
 ---
 
@@ -804,7 +881,7 @@ python3 -m py_compile runtime.py ui/test-module-ui.py \
 python3 -m unittest discover -s tests -v
 ```
 
-The published 1.2.7 unit suite contains **nine tests** covering UI Close → IPC unregister and Governor-controlled Tray status/action behavior. A new feature needs additional tests, not just the same suite repeated.
+The **published 1.2.7** source had **nine tests**, covering UI Close → IPC unregister and Governor-controlled Tray status/action behavior. In the **2026-10-13 1.2.8 candidate audit**, the local suite passed **14/14** tests, including declarative Uninstall checks. These are source/contract tests only; they do not certify an actual Linux service, Tray shutdown or on-disk Uninstall transaction.
 
 Before publishing, compare the module's installed manifest version, release-note filenames, CUSTOM material metadata, Construction steps, source SHA and Registry version. A script should fail on unexpected dirty files, but must parse Git porcelain status correctly and must not delete other worktree changes.
 
@@ -827,7 +904,27 @@ Before publishing, compare the module's installed manifest version, release-note
 
 Read Governor state using `neebles boss surface-model`, not window-title heuristics. Verify on-screen button behavior separately.
 
-### C. Other acceptance areas
+### C. Installed-system acceptance — Uninstall (1.2.8 + compatible Boss TXN V5)
+
+Execute on a controlled, recoverable installation. Capture pre/post evidence and the exact installed Boss build SHA; do not assume that the development branch is deployed.
+
+| Scenario | Required evidence |
+|---|---|
+| Initial state | Installed module manifest, actual user service unit path/state, process identities, Tray/Bubblewrap processes, controller socket and settings snapshot |
+| `remove_settings=false` | Module and module-owned executable resources are gone; explicitly retained user Settings survive unchanged |
+| `remove_settings=true` | Same complete resource retirement; module Settings are removed according to contract |
+| `systemd-user` service | Declared unit stopped, disabled and removed, user enablement symlink absent, manager reloaded; no service process remains |
+| Governed runtime and Tray | Governor/runtime and Tray provider stopped; no module-owned descendant/Bubblewrap process remains; ownership verified before destructive actions |
+| Controller socket | No live listener or forgotten module-owned socket remains after successful service retirement |
+| XDG Autostart | Not declared for Test Module: no synthetic desktop file, no unrelated entry touched; exercise the generic adapter in a separate owned fixture/module |
+| Pre-commit failure | Fail closed; verify original manifest/installation/material/settings integrity and safe recovery of previously active services |
+| Post-commit failure | Report `CRITICAL` without attempting to resurrect a partially removed installation |
+| Foreign/unknown process | Stop and explain unsafe Uninstall; never kill a process on name matching alone |
+| Reinstallation | Exact source/material selection, optional helper state and Open/Close/Tray behavior re-verified after a genuine reinstall |
+
+The 2026-10-13 audit is a **pre-Uninstall baseline only**, not evidence that any post-Uninstall criterion above passed.
+
+### D. Other acceptance areas
 
 | Area | Minimum real-system check |
 |---|---|
@@ -997,10 +1094,31 @@ That — and not Python/Tk, this module's icon, or its sample buttons — is the
 
 ---
 
-## 19. 1.2.8 development candidate — module-owned Uninstall checklist
+## 19. 1.2.8 Uninstall development candidate and pending certification
 
-This section is a **development candidate**, not a revision of the published 1.2.7 snapshot above. `manifest.json` declares the new `uninstall` contract, schema 1, introduced by the Boss 1.0.52 source patch. The principal application remains controlled by Lifecycle/Governor. The Tray reference points to `manifest.tray`, and the optional session helper is a `systemd-user` service declared by its exact module-namespaced unit. `$hardcoded.session_service` is resolved with Lifecycle's existing `$namespace.key` syntax.
+This section documents **current development source**, not an amendment of the already published 1.2.7 baseline. Test Module commit `3835ca4` declares `uninstall` schema 1, while Boss TXN V5 commit `66f0f7a` is a development implementation with separate governed `systemd-user` and XDG-user Autostart retirement capabilities. Neither a source commit nor a local installation is by itself a certified coordinated release.
 
-A module that has no extras may omit `extras` entirely. Test Module's Python/Tk runtime is strictly an example; the contract does not define any required programming language. Only modules declaring valid, verifiable resources can have those resources stopped. Boss does not grep or kill all processes named `python3`. Filesystem cleanup is limited to relative paths under `shared/data/<module-id>`. Local settings keep their explicit preserve/remove UI choice.
+### Actual declaration and ownership
 
-The new module version must be published together with the appropriate exact source/CUSTOM/Registry identities **only after** the Boss backend is compiled and actual first-attempt uninstalls are certified on Ryzen in both Settings modes.
+The module's `uninstall` contract (`manifest.json`) declares:
+
+- `main: governor`: Boss owns lifecycle and runtime deactivation; this is not a module-supplied `kill` script.
+- `extras[id=session-controller]`: `type: service`, `provider: systemd-user`, `name: $hardcoded.session_service`, `exec_start: /usr/bin/python3.13 /opt/neebles/modules/test-module/tray/session-controller.py`, `required: false`, `stop.disable: true`, `stop.timeout_ms: 5000`, `verify: inactive`, `remove: true`.
+- `extras[id=tray]`: `type: governed`, `ref: manifest.tray`, `required: false`, `verify: terminated`. This is a distinct governed provider/runtime, **not the same process** as the user-session service.
+- `cleanup[id=module-cache]`: `type: directory`, `scope: module-data`, `path: $hardcoded.cache_directory`, `policy: always`.
+- `cleanup[id=local-settings]`: `type: settings`, `ref: manifest.settings`, `policy: user-choice`.
+- `failure`: `unknown_process_owner`, `resource_still_running` and `cleanup_error` are all `abort`.
+
+The `lifecycle.json` transition named `uninstall` deliberately has no module-specific operations. This is legitimate: Boss runs the governed lifecycle and owns the Uninstall coordinator and declared extra-resource handling; an empty transition must not be misread as a request to skip the Boss transaction.
+
+### Generic contract, not a Test Module special case
+
+The goal of Uninstall TXN V5 is to retire **all module-owned, declared and supported executable resources safely** via appropriate authorities/adapters, not merely this Python helper. The known development adapters cover `systemd-user` services and XDG-user Autostart, while the existing Governor/Boss runtime manages governed resources. Different module technologies require their own declared and verifiable ownership routes; do not add unconditional process-name kills, arbitrary host-wide sweeps or invented `test-module` branches inside Boss.
+
+A module without extras can omit `extras` if allowed by the applicable schema. Test Module currently declares **no XDG Autostart desktop file**; this is not a missing entry. XDG cleanup belongs to a separate real owner or isolated test fixture. No Linux service, socket, process or desktop entry should be removed merely because its name resembles a module ID.
+
+### Evidence and publication gate
+
+The Ryzen audit dated `2026-10-13 20:46` found the 1.2.8 manifest installed and equal to source, a running opt-in user service, Tray/Bubblewrap processes and controller socket. All **14 local Python tests** passed. It did not execute Uninstall and cannot certify resource retirement or rollback. The `systemd-user` removal, governed Tray/runtime shutdown, failure handling and both Settings modes must be demonstrated with before/after traces against an identified installed Boss build.
+
+Only after integral verification should the 1.2.8 release be coordinated with the correct immutable module source, CUSTOM V2 material/Construction identities and Boss Registry selection. **Updating this README does not change the manifest, running installation, Registry, CUSTOM or Boss build.**
