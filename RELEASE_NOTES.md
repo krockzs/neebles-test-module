@@ -1,12 +1,12 @@
-> **1.2.12 CANDIDATE — MULTILINGUAL MODULE RESOURCES.** 253 regional language options (32 keys each), aligned with Boss 2.0.0. No Python, Tray, Lifecycle, Construction world, packages or permission boundary changed. Initial translations vary in coverage and may retain English fallback. Installed update, language switching and Tray autostart remain separate acceptance gates.
+> **CURRENT RELEASE v1.2.12 — PUBLICADA 14-10-2026.** SHA de fuente `3d265bc62a7ff51ed1c42aecf0158abfa29b3223`. 253 JSON regionales (32 claves cada uno), compatibles con Boss v2.0.0. La publicacion en GitHub incluye archivo fuente, `SHA256SUMS` y `SOURCE_COMMITS.txt`. El ciclo de pruebas de fuente paso **38/38** en Ryzen; las pruebas de funcionamiento real y los fallos inducidos son puertas independientes. Python, Tray, Lifecycle, material DEB y Construction no cambiaron en esta version.
 
-> **1.2.10 CANDIDATA (NO PUBLICADA).** Tray Surface IPC autenticado via Boss Tray Manager. Sin servicio de controlador requerido. Publicar solo en conjunto con Boss y CUSTOM compatibles.
+> **HISTÓRICO: 1.2.10, anotación de su fase candidata.** Tray Surface IPC autenticado via Boss Tray Manager. Sin servicio de controlador requerido. Su publicación se planificó conjuntamente con Boss y CUSTOM compatibles; esta nota no representa el estado actual.
 
-> **1.2.9 CANDIDATA (NO PUBLICADA).** Endurece la reinstalación del controlador de sesión como operación explícita del usuario KDE. No publicar ni cambiar CUSTOM/Registry hasta certificar el ciclo instalado.
+> **HISTÓRICO: 1.2.9, anotación de su fase candidata.** Endurecía la reinstalación del controlador privado de sesión como operación explícita del usuario KDE. Su condición de publicación dependía de la certificación de su época; no es una instrucción vigente.
 
 # N.E.E.B.L.E.S. Test Module — Release Notes and Integration Closure
 
-**Reference release:** `1.2.7` · **Status:** published module source and CUSTOM V2 / Boss Registry alignment; installed-system workflow reported working after the separate KDE startup repair.
+**Reference release:** `1.2.7` (**historical**, not current 1.2.12) · **Status:** published module source and CUSTOM V2 / Boss Registry alignment; installed-system workflow reported working after the separate KDE startup repair.
 
 > This file is a developer-facing consolidated **history and handoff**. Boss's **user-facing, authenticated, localized update notes** remain in `critical-update/release-notes/es_cl_<version>.txt` and `en_us_<version>.txt`. This document does **not** create a new functional module release, does **not** replace those installed note files, and does **not** rewrite the history of earlier releases.
 
