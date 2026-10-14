@@ -39,10 +39,10 @@ def authoritative_open_snapshot(response):
     }
 
 
-def load_tray_strings():
+def load_tray_strings(locale):
     base = Path(__file__).resolve().parent.parent
     info = json.loads((base / "languages/manifest.json").read_text(encoding="utf-8"))
-    language = os.environ.get("NEEBLES_LANGUAGE", info["default"]).split(".", 1)[0].replace("-", "_")
+    language = locale.split(".", 1)[0].replace("-", "_")
     for entry in info["languages"]:
         if entry["code"].replace("-", "_") == language:
             return json.loads((base / "languages" / entry["file"]).read_text(encoding="utf-8"))
@@ -251,13 +251,15 @@ def main():
             settings_set("tray.visible", "false")
             initial_visible = False
     if not initial_visible and initial_autostart:
-        settings_set("tray.autostart", "false")
+        # Keep the user's autostart choice for diagnosis; a hidden icon is
+        # not proof that the requested autostart setting should be erased.
+        report_message("Tray autostart is enabled but visibility is disabled")
 
     session_visibility(initial_visible)
 
     option1 = tk.BooleanVar(value=initial_option1)
     option2 = tk.BooleanVar(value=initial_option2)
-    ui_strings = load_tray_strings()
+    ui_strings = load_tray_strings(settings_get("ui.language"))
     open_status = {"opened": False, "available": False, "busy": False, "pending": False}
 
     def publish_state(opened=None):
@@ -286,11 +288,11 @@ def main():
             )
         except Exception as error:
             option1.set(not value)
-            report_message(f"No se pudo guardar Opción 1: {error}")
+            report_message(f"{ui_strings.get('tray.save_failed', 'Could not save setting')}: {error}")
             publish_state(True)
             return
 
-        report_message("Opción 1 encendida" if value else "Opción 1 apagada")
+        report_message(ui_strings.get("tray.option1_on" if value else "tray.option1_off", "Option 1 changed"))
         publish_state(True)
 
     def toggle2():
@@ -303,16 +305,19 @@ def main():
             )
         except Exception as error:
             option2.set(not value)
-            report_message(f"No se pudo guardar Opción 2: {error}")
+            report_message(f"{ui_strings.get('tray.save_failed', 'Could not save setting')}: {error}")
             publish_state(True)
             return
 
-        report_message("Opción 2 encendida" if value else "Opción 2 apagada")
+        report_message(ui_strings.get("tray.option2_on" if value else "tray.option2_off", "Option 2 changed"))
         publish_state(True)
 
-    tk.Checkbutton(root, text="Opción 1", variable=option1, command=toggle1).pack(anchor="w", padx=30, pady=(30, 8))
-    tk.Checkbutton(root, text="Opción 2", variable=option2, command=toggle2).pack(anchor="w", padx=30, pady=8)
-    tk.Button(root, text="Botón de prueba", command=lambda: report_message("Botón de prueba presionado")).pack(pady=(8, 4))
+    option1_control = tk.Checkbutton(root, text=ui_strings.get("features.option1", "Feature Option 1"), variable=option1, command=toggle1)
+    option1_control.pack(anchor="w", padx=30, pady=(30, 8))
+    option2_control = tk.Checkbutton(root, text=ui_strings.get("features.option2", "Feature Option 2"), variable=option2, command=toggle2)
+    option2_control.pack(anchor="w", padx=30, pady=8)
+    test_button = tk.Button(root, text=ui_strings.get("tray.test_button", "Test button"), command=lambda: report_message(ui_strings.get("tray.test_pressed", "Tray test button pressed")))
+    test_button.pack(pady=(8, 4))
 
     def request_open_status():
         if open_status["pending"]:
@@ -357,6 +362,14 @@ def main():
         command=on_open_pressed, state="disabled",
     )
     open_button.pack(pady=(3, 12))
+
+    def apply_language(locale):
+        nonlocal ui_strings
+        ui_strings = load_tray_strings(locale)
+        option1_control.configure(text=ui_strings.get("features.option1", "Feature Option 1"))
+        option2_control.configure(text=ui_strings.get("features.option2", "Feature Option 2"))
+        test_button.configure(text=ui_strings.get("tray.test_button", "Test button"))
+        open_button.configure(text=ui_strings.get("surface.open_tray", "Open Test Module"))
 
     def poll_open_status():
         if root.state() != "withdrawn" and not open_status["pending"] and not open_status["busy"]:
@@ -525,6 +538,9 @@ def main():
                 elif path == "tray.autostart":
                     # A session-start preference, not a live visibility flip.
                     continue
+                elif path == "ui.language":
+                    apply_language(value)
+                    continue
                 else:
                     continue
 
@@ -533,6 +549,7 @@ def main():
                 )
 
             elif kind == "reload":
+                apply_language(settings_get("ui.language"))
                 option1.set(
                     settings_get(
                         "features.option1"

@@ -22,5 +22,13 @@
   "tray.visible": "Show Tray",
   "tray.autostart": "Start Tray with Linux",
   "surface.open_tray": "Open Test Module",
-  "tray.controller_unavailable": "Session controller unavailable"
+  "tray.controller_unavailable": "Session controller unavailable",
+  "tray.test_button": "Test button",
+  "ui.private_intent": "Private UI intent",
+  "tray.option1_on": "Option 1 enabled",
+  "tray.option1_off": "Option 1 disabled",
+  "tray.option2_on": "Option 2 enabled",
+  "tray.option2_off": "Option 2 disabled",
+  "tray.save_failed": "Could not save setting",
+  "tray.test_pressed": "Tray test button pressed"
 }

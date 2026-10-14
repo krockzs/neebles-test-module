@@ -17,16 +17,16 @@ def load_json(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def load_strings():
+def load_strings(locale="en_US"):
     manifest = load_json(LANGUAGE_MANIFEST)
-    requested = os.environ.get("NEEBLES_LANGUAGE", manifest["default"]).split(".", 1)[0].replace("-", "_")
+    requested = locale.split(".", 1)[0].replace("-", "_")
     selected = next((item for item in manifest["languages"] if item["code"].replace("-", "_") == requested), None)
     if selected is None:
         selected = next(item for item in manifest["languages"] if item["code"] == manifest["default"])
     return load_json(BASE_DIR / "languages" / selected["file"])
 
 
-STRINGS = load_strings()
+STRINGS = load_strings()  # updated from module Settings immediately on Open
 MODULE_VERSION = str(load_json(BASE_DIR / "manifest.json")["version"])
 
 PRIVATE_UI_ACTIONS = [
@@ -147,6 +147,8 @@ def drain_runtime_events():
             elif path == "tray.autostart":
                 tray_autostart.set(value == "true")
                 sync_tray_controls()
+            elif path == "ui.language":
+                apply_language(value)
 
             continue
 
@@ -215,7 +217,7 @@ features.pack(
     pady=(0, 12),
 )
 
-tk.Checkbutton(
+option1_control = tk.Checkbutton(
     features,
     text=STRINGS.get(
         "features.option1",
@@ -226,13 +228,14 @@ tk.Checkbutton(
         "features.option1",
         option1,
     ),
-).pack(
+)
+option1_control.pack(
     anchor="w",
     padx=12,
     pady=(8, 4),
 )
 
-tk.Checkbutton(
+option2_control = tk.Checkbutton(
     features,
     text=STRINGS.get(
         "features.option2",
@@ -243,7 +246,8 @@ tk.Checkbutton(
         "features.option2",
         option2,
     ),
-).pack(
+)
+option2_control.pack(
     anchor="w",
     padx=12,
     pady=(4, 8),
@@ -255,12 +259,13 @@ tray_options = tk.LabelFrame(
 )
 tray_options.pack(fill="x", padx=20, pady=(0, 12))
 
-tk.Checkbutton(
+tray_visible_control = tk.Checkbutton(
     tray_options,
     text=STRINGS.get("tray.visible", "Show Tray"),
     variable=tray_visible,
     command=lambda: request_feature("tray.visible", tray_visible),
-).pack(anchor="w", padx=12, pady=(6, 4))
+)
+tray_visible_control.pack(anchor="w", padx=12, pady=(6, 4))
 
 tray_autostart_control = tk.Checkbutton(
     tray_options,
@@ -291,11 +296,33 @@ def run_ui_intent(intent):
     )
 
 
+intent_rows = []
 for intent in PRIVATE_UI_ACTIONS:
     row = tk.Frame(root)
     row.pack(fill="x", padx=20, pady=5)
-    tk.Label(row, text=f"test-module private UI {intent}", anchor="w", width=45).pack(side="left", fill="x", expand=True)
-    tk.Button(row, text=STRINGS.get("ui.execute", "Ejecutar"), width=12, command=lambda value=intent: run_ui_intent(value)).pack(side="right")
+    caption = tk.Label(row, text=f"test-module private UI {intent}", anchor="w", width=45)
+    caption.pack(side="left", fill="x", expand=True)
+    trigger = tk.Button(row, text=STRINGS.get("ui.execute", "Run"), width=12, command=lambda value=intent: run_ui_intent(value))
+    trigger.pack(side="right")
+    intent_rows.append((intent, caption, trigger))
+
+
+def apply_language(locale):
+    global STRINGS
+    STRINGS = load_strings(locale)
+    root.title(f'{STRINGS.get("app.title", "N.E.E.B.L.E.S. Test Module")} {MODULE_VERSION}')
+    header.configure(text=f'{STRINGS.get("app.heading", "N.E.E.B.L.E.S. Test Module")} {MODULE_VERSION}')
+    subtitle.configure(text=STRINGS.get("app.subtitle", "Dynamic contract test console"))
+    features.configure(text=STRINGS.get("features.title", "Module Features"))
+    option1_control.configure(text=STRINGS.get("features.option1", "Feature Option 1"))
+    option2_control.configure(text=STRINGS.get("features.option2", "Feature Option 2"))
+    tray_options.configure(text=STRINGS.get("tray.title", "System Tray"))
+    tray_visible_control.configure(text=STRINGS.get("tray.visible", "Show Tray"))
+    tray_autostart_control.configure(text=STRINGS.get("tray.autostart", "Start Tray with Linux"))
+    for intent, caption, trigger in intent_rows:
+        caption.configure(text=f'{STRINGS.get("ui.private_intent", "Private UI intent")} {intent}')
+        trigger.configure(text=STRINGS.get("ui.execute", "Run"))
+
 
 threading.Thread(
     target=runtime_reader,

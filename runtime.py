@@ -70,6 +70,7 @@ PRIVATE_UI_ENDPOINTS = {
 
 EVENT_HISTORY = collections.deque(maxlen=MAX_EVENT_HISTORY)
 DEFERRED_MESSAGES = collections.deque()
+CURRENT_LANGUAGE = None  # updated exclusively from this module's ui.language Settings
 
 SUBSCRIPTIONS = [
     "module.lifecycle",
@@ -84,10 +85,7 @@ def load_json(path):
 def language_file():
     manifest = load_json(LANGUAGE_MANIFEST_PATH)
 
-    requested = os.environ.get(
-        "NEEBLES_LANGUAGE",
-        manifest["default"],
-    )
+    requested = CURRENT_LANGUAGE or manifest["default"]
 
     normalized = requested.split(".", 1)[0].replace("-", "_")
 
@@ -419,7 +417,7 @@ def pong(stream, session_id):
 
 
 def handle_control_message(stream, session_id, message):
-    global STOP
+    global STOP, CURRENT_LANGUAGE
 
     message_type = message.get("type")
 
@@ -450,6 +448,8 @@ def handle_control_message(stream, session_id, message):
                 isinstance(path, str)
                 and isinstance(value, str)
             ):
+                if path == "ui.language":
+                    CURRENT_LANGUAGE = value
                 push_ui_message(
                     {
                         "type":
@@ -660,6 +660,7 @@ def execute_endpoint(
                 "features.option2",
                 "tray.visible",
                 "tray.autostart",
+                "ui.language",
             ):
                 push_ui_message(
                     {
@@ -1138,7 +1139,7 @@ def requested_intent():
 
 
 def main():
-    global STOP, UI_PROCESS
+    global STOP, UI_PROCESS, CURRENT_LANGUAGE
 
     intent = requested_intent()
 
@@ -1211,6 +1212,8 @@ def main():
         session_id,
     )
 
+    CURRENT_LANGUAGE = settings_get(stream, session_id, "ui.language")
+
     if intent == "open":
         UI_PROCESS = launch_ui()
 
@@ -1219,6 +1222,7 @@ def main():
             "features.option2",
             "tray.visible",
             "tray.autostart",
+            "ui.language",
         ):
             push_ui_message(
                 {

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "default": "es_CL",
+  "default": "en_US",
   "languages": [
     {
       "code": "es_CL",

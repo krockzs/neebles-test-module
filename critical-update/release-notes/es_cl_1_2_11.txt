@@ -1,0 +1,8 @@
+NEEBLES Test Module 1.2.11
+
+- La interfaz principal y su Tray leen ui.language desde Settings del módulo.
+- Los textos de ambas interfaces se actualizan cuando cambia el idioma mediante el canal de Settings existente.
+- El Tray mantiene separados los estados Mostrar Tray e Iniciar Tray con Linux.
+- El inicio con KDE debe comprobarse tras reiniciar: la reconciliación de Boss tiene nuevos reintentos.
+
+IMPORTANTE: requiere una versión de Boss con sincronización genérica de ui.language y reconciliación de Tray revisada (objetivo 1.0.55).

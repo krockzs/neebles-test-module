@@ -2,7 +2,9 @@
   "hardcoded": {
     "module": "test-module"
   },
-  "ui": {},
+  "ui": {
+    "language": "en_US"
+  },
   "features": {
     "option1": "false",
     "option2": "false"

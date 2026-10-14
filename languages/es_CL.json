@@ -22,5 +22,13 @@
   "tray.visible": "Mostrar Tray",
   "tray.autostart": "Iniciar Tray con Linux",
   "surface.open_tray": "Abrir Test Module",
-  "tray.controller_unavailable": "Controlador de sesión no disponible"
+  "tray.controller_unavailable": "Controlador de sesión no disponible",
+  "tray.test_button": "Botón de prueba",
+  "ui.private_intent": "Intención privada de UI",
+  "tray.option1_on": "Opción 1 activada",
+  "tray.option1_off": "Opción 1 desactivada",
+  "tray.option2_on": "Opción 2 activada",
+  "tray.option2_off": "Opción 2 desactivada",
+  "tray.save_failed": "No se pudo guardar la opción",
+  "tray.test_pressed": "Botón de prueba del Tray presionado"
 }

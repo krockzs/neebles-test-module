@@ -1,0 +1,8 @@
+NEEBLES Test Module 1.2.11
+
+- The main UI and Tray read ui.language from the module's own Settings.
+- Both interfaces update their labels when the language changes through the existing Settings channel.
+- Show Tray and Start Tray with Linux remain separate preferences.
+- KDE login startup requires a real reboot test; Boss startup reconciliation now retries.
+
+IMPORTANT: requires a Boss build with generic ui.language synchronization and updated Tray reconciliation (target 1.0.55).
