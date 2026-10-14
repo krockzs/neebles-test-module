@@ -9,6 +9,1010 @@
     {
       "code": "en_US",
       "file": "en_US.json"
+    },
+    {
+      "code": "ca_AD",
+      "file": "ca_AD.json"
+    },
+    {
+      "code": "ar_AE",
+      "file": "ar_AE.json"
+    },
+    {
+      "code": "fa_AF",
+      "file": "fa_AF.json"
+    },
+    {
+      "code": "en_AG",
+      "file": "en_AG.json"
+    },
+    {
+      "code": "en_AI",
+      "file": "en_AI.json"
+    },
+    {
+      "code": "sq_AL",
+      "file": "sq_AL.json"
+    },
+    {
+      "code": "hy_AM",
+      "file": "hy_AM.json"
+    },
+    {
+      "code": "pt_AO",
+      "file": "pt_AO.json"
+    },
+    {
+      "code": "en_AQ",
+      "file": "en_AQ.json"
+    },
+    {
+      "code": "es_AR",
+      "file": "es_AR.json"
+    },
+    {
+      "code": "sm_AS",
+      "file": "sm_AS.json"
+    },
+    {
+      "code": "de_AT",
+      "file": "de_AT.json"
+    },
+    {
+      "code": "en_AU",
+      "file": "en_AU.json"
+    },
+    {
+      "code": "nl_AW",
+      "file": "nl_AW.json"
+    },
+    {
+      "code": "sv_AX",
+      "file": "sv_AX.json"
+    },
+    {
+      "code": "az_AZ",
+      "file": "az_AZ.json"
+    },
+    {
+      "code": "bs_BA",
+      "file": "bs_BA.json"
+    },
+    {
+      "code": "en_BB",
+      "file": "en_BB.json"
+    },
+    {
+      "code": "bn_BD",
+      "file": "bn_BD.json"
+    },
+    {
+      "code": "nl_BE",
+      "file": "nl_BE.json"
+    },
+    {
+      "code": "fr_BF",
+      "file": "fr_BF.json"
+    },
+    {
+      "code": "bg_BG",
+      "file": "bg_BG.json"
+    },
+    {
+      "code": "ar_BH",
+      "file": "ar_BH.json"
+    },
+    {
+      "code": "rn_BI",
+      "file": "rn_BI.json"
+    },
+    {
+      "code": "fr_BJ",
+      "file": "fr_BJ.json"
+    },
+    {
+      "code": "fr_BL",
+      "file": "fr_BL.json"
+    },
+    {
+      "code": "en_BM",
+      "file": "en_BM.json"
+    },
+    {
+      "code": "ms_BN",
+      "file": "ms_BN.json"
+    },
+    {
+      "code": "es_BO",
+      "file": "es_BO.json"
+    },
+    {
+      "code": "nl_BQ",
+      "file": "nl_BQ.json"
+    },
+    {
+      "code": "pt_BR",
+      "file": "pt_BR.json"
+    },
+    {
+      "code": "en_BS",
+      "file": "en_BS.json"
+    },
+    {
+      "code": "dz_BT",
+      "file": "dz_BT.json"
+    },
+    {
+      "code": "nb_BV",
+      "file": "nb_BV.json"
+    },
+    {
+      "code": "en_BW",
+      "file": "en_BW.json"
+    },
+    {
+      "code": "be_BY",
+      "file": "be_BY.json"
+    },
+    {
+      "code": "en_BZ",
+      "file": "en_BZ.json"
+    },
+    {
+      "code": "en_CA",
+      "file": "en_CA.json"
+    },
+    {
+      "code": "en_CC",
+      "file": "en_CC.json"
+    },
+    {
+      "code": "fr_CD",
+      "file": "fr_CD.json"
+    },
+    {
+      "code": "sg_CF",
+      "file": "sg_CF.json"
+    },
+    {
+      "code": "fr_CG",
+      "file": "fr_CG.json"
+    },
+    {
+      "code": "de_CH",
+      "file": "de_CH.json"
+    },
+    {
+      "code": "fr_CI",
+      "file": "fr_CI.json"
+    },
+    {
+      "code": "en_CK",
+      "file": "en_CK.json"
+    },
+    {
+      "code": "fr_CM",
+      "file": "fr_CM.json"
+    },
+    {
+      "code": "zh_CN",
+      "file": "zh_CN.json"
+    },
+    {
+      "code": "es_CO",
+      "file": "es_CO.json"
+    },
+    {
+      "code": "fr_CP",
+      "file": "fr_CP.json"
+    },
+    {
+      "code": "es_CR",
+      "file": "es_CR.json"
+    },
+    {
+      "code": "es_CU",
+      "file": "es_CU.json"
+    },
+    {
+      "code": "pt_CV",
+      "file": "pt_CV.json"
+    },
+    {
+      "code": "pap_CW",
+      "file": "pap_CW.json"
+    },
+    {
+      "code": "en_CX",
+      "file": "en_CX.json"
+    },
+    {
+      "code": "el_CY",
+      "file": "el_CY.json"
+    },
+    {
+      "code": "cs_CZ",
+      "file": "cs_CZ.json"
+    },
+    {
+      "code": "de_DE",
+      "file": "de_DE.json"
+    },
+    {
+      "code": "en_DG",
+      "file": "en_DG.json"
+    },
+    {
+      "code": "fr_DJ",
+      "file": "fr_DJ.json"
+    },
+    {
+      "code": "da_DK",
+      "file": "da_DK.json"
+    },
+    {
+      "code": "en_DM",
+      "file": "en_DM.json"
+    },
+    {
+      "code": "es_DO",
+      "file": "es_DO.json"
+    },
+    {
+      "code": "ar_DZ",
+      "file": "ar_DZ.json"
+    },
+    {
+      "code": "es_EC",
+      "file": "es_EC.json"
+    },
+    {
+      "code": "et_EE",
+      "file": "et_EE.json"
+    },
+    {
+      "code": "ar_EG",
+      "file": "ar_EG.json"
+    },
+    {
+      "code": "ar_EH",
+      "file": "ar_EH.json"
+    },
+    {
+      "code": "ti_ER",
+      "file": "ti_ER.json"
+    },
+    {
+      "code": "es_ES",
+      "file": "es_ES.json"
+    },
+    {
+      "code": "am_ET",
+      "file": "am_ET.json"
+    },
+    {
+      "code": "fi_FI",
+      "file": "fi_FI.json"
+    },
+    {
+      "code": "en_FJ",
+      "file": "en_FJ.json"
+    },
+    {
+      "code": "en_FK",
+      "file": "en_FK.json"
+    },
+    {
+      "code": "en_FM",
+      "file": "en_FM.json"
+    },
+    {
+      "code": "fo_FO",
+      "file": "fo_FO.json"
+    },
+    {
+      "code": "fr_FR",
+      "file": "fr_FR.json"
+    },
+    {
+      "code": "fr_GA",
+      "file": "fr_GA.json"
+    },
+    {
+      "code": "en_GB",
+      "file": "en_GB.json"
+    },
+    {
+      "code": "en_GD",
+      "file": "en_GD.json"
+    },
+    {
+      "code": "ka_GE",
+      "file": "ka_GE.json"
+    },
+    {
+      "code": "fr_GF",
+      "file": "fr_GF.json"
+    },
+    {
+      "code": "en_GG",
+      "file": "en_GG.json"
+    },
+    {
+      "code": "en_GH",
+      "file": "en_GH.json"
+    },
+    {
+      "code": "en_GI",
+      "file": "en_GI.json"
+    },
+    {
+      "code": "kl_GL",
+      "file": "kl_GL.json"
+    },
+    {
+      "code": "en_GM",
+      "file": "en_GM.json"
+    },
+    {
+      "code": "fr_GN",
+      "file": "fr_GN.json"
+    },
+    {
+      "code": "fr_GP",
+      "file": "fr_GP.json"
+    },
+    {
+      "code": "es_GQ",
+      "file": "es_GQ.json"
+    },
+    {
+      "code": "el_GR",
+      "file": "el_GR.json"
+    },
+    {
+      "code": "en_GS",
+      "file": "en_GS.json"
+    },
+    {
+      "code": "es_GT",
+      "file": "es_GT.json"
+    },
+    {
+      "code": "en_GU",
+      "file": "en_GU.json"
+    },
+    {
+      "code": "pt_GW",
+      "file": "pt_GW.json"
+    },
+    {
+      "code": "en_GY",
+      "file": "en_GY.json"
+    },
+    {
+      "code": "zh_HK",
+      "file": "zh_HK.json"
+    },
+    {
+      "code": "en_HM",
+      "file": "en_HM.json"
+    },
+    {
+      "code": "es_HN",
+      "file": "es_HN.json"
+    },
+    {
+      "code": "hr_HR",
+      "file": "hr_HR.json"
+    },
+    {
+      "code": "ht_HT",
+      "file": "ht_HT.json"
+    },
+    {
+      "code": "hu_HU",
+      "file": "hu_HU.json"
+    },
+    {
+      "code": "es_IC",
+      "file": "es_IC.json"
+    },
+    {
+      "code": "id_ID",
+      "file": "id_ID.json"
+    },
+    {
+      "code": "en_IE",
+      "file": "en_IE.json"
+    },
+    {
+      "code": "he_IL",
+      "file": "he_IL.json"
+    },
+    {
+      "code": "en_IM",
+      "file": "en_IM.json"
+    },
+    {
+      "code": "hi_IN",
+      "file": "hi_IN.json"
+    },
+    {
+      "code": "en_IO",
+      "file": "en_IO.json"
+    },
+    {
+      "code": "ar_IQ",
+      "file": "ar_IQ.json"
+    },
+    {
+      "code": "fa_IR",
+      "file": "fa_IR.json"
+    },
+    {
+      "code": "is_IS",
+      "file": "is_IS.json"
+    },
+    {
+      "code": "it_IT",
+      "file": "it_IT.json"
+    },
+    {
+      "code": "en_JE",
+      "file": "en_JE.json"
+    },
+    {
+      "code": "en_JM",
+      "file": "en_JM.json"
+    },
+    {
+      "code": "ar_JO",
+      "file": "ar_JO.json"
+    },
+    {
+      "code": "ja_JP",
+      "file": "ja_JP.json"
+    },
+    {
+      "code": "sw_KE",
+      "file": "sw_KE.json"
+    },
+    {
+      "code": "ky_KG",
+      "file": "ky_KG.json"
+    },
+    {
+      "code": "km_KH",
+      "file": "km_KH.json"
+    },
+    {
+      "code": "en_KI",
+      "file": "en_KI.json"
+    },
+    {
+      "code": "ar_KM",
+      "file": "ar_KM.json"
+    },
+    {
+      "code": "en_KN",
+      "file": "en_KN.json"
+    },
+    {
+      "code": "ko_KP",
+      "file": "ko_KP.json"
+    },
+    {
+      "code": "ko_KR",
+      "file": "ko_KR.json"
+    },
+    {
+      "code": "ar_KW",
+      "file": "ar_KW.json"
+    },
+    {
+      "code": "en_KY",
+      "file": "en_KY.json"
+    },
+    {
+      "code": "ru_KZ",
+      "file": "ru_KZ.json"
+    },
+    {
+      "code": "lo_LA",
+      "file": "lo_LA.json"
+    },
+    {
+      "code": "ar_LB",
+      "file": "ar_LB.json"
+    },
+    {
+      "code": "en_LC",
+      "file": "en_LC.json"
+    },
+    {
+      "code": "de_LI",
+      "file": "de_LI.json"
+    },
+    {
+      "code": "si_LK",
+      "file": "si_LK.json"
+    },
+    {
+      "code": "en_LR",
+      "file": "en_LR.json"
+    },
+    {
+      "code": "st_LS",
+      "file": "st_LS.json"
+    },
+    {
+      "code": "lt_LT",
+      "file": "lt_LT.json"
+    },
+    {
+      "code": "fr_LU",
+      "file": "fr_LU.json"
+    },
+    {
+      "code": "lv_LV",
+      "file": "lv_LV.json"
+    },
+    {
+      "code": "ar_LY",
+      "file": "ar_LY.json"
+    },
+    {
+      "code": "ar_MA",
+      "file": "ar_MA.json"
+    },
+    {
+      "code": "fr_MC",
+      "file": "fr_MC.json"
+    },
+    {
+      "code": "ro_MD",
+      "file": "ro_MD.json"
+    },
+    {
+      "code": "sr_ME",
+      "file": "sr_ME.json"
+    },
+    {
+      "code": "fr_MF",
+      "file": "fr_MF.json"
+    },
+    {
+      "code": "mg_MG",
+      "file": "mg_MG.json"
+    },
+    {
+      "code": "en_MH",
+      "file": "en_MH.json"
+    },
+    {
+      "code": "mk_MK",
+      "file": "mk_MK.json"
+    },
+    {
+      "code": "fr_ML",
+      "file": "fr_ML.json"
+    },
+    {
+      "code": "my_MM",
+      "file": "my_MM.json"
+    },
+    {
+      "code": "mn_MN",
+      "file": "mn_MN.json"
+    },
+    {
+      "code": "zh_MO",
+      "file": "zh_MO.json"
+    },
+    {
+      "code": "en_MP",
+      "file": "en_MP.json"
+    },
+    {
+      "code": "fr_MQ",
+      "file": "fr_MQ.json"
+    },
+    {
+      "code": "ar_MR",
+      "file": "ar_MR.json"
+    },
+    {
+      "code": "en_MS",
+      "file": "en_MS.json"
+    },
+    {
+      "code": "mt_MT",
+      "file": "mt_MT.json"
+    },
+    {
+      "code": "fr_MU",
+      "file": "fr_MU.json"
+    },
+    {
+      "code": "dv_MV",
+      "file": "dv_MV.json"
+    },
+    {
+      "code": "en_MW",
+      "file": "en_MW.json"
+    },
+    {
+      "code": "es_MX",
+      "file": "es_MX.json"
+    },
+    {
+      "code": "my_MY",
+      "file": "my_MY.json"
+    },
+    {
+      "code": "pt_MZ",
+      "file": "pt_MZ.json"
+    },
+    {
+      "code": "en_NA",
+      "file": "en_NA.json"
+    },
+    {
+      "code": "fr_NC",
+      "file": "fr_NC.json"
+    },
+    {
+      "code": "fr_NE",
+      "file": "fr_NE.json"
+    },
+    {
+      "code": "en_NF",
+      "file": "en_NF.json"
+    },
+    {
+      "code": "en_NG",
+      "file": "en_NG.json"
+    },
+    {
+      "code": "es_NI",
+      "file": "es_NI.json"
+    },
+    {
+      "code": "nl_NL",
+      "file": "nl_NL.json"
+    },
+    {
+      "code": "nb_NO",
+      "file": "nb_NO.json"
+    },
+    {
+      "code": "ne_NP",
+      "file": "ne_NP.json"
+    },
+    {
+      "code": "en_NR",
+      "file": "en_NR.json"
+    },
+    {
+      "code": "en_NU",
+      "file": "en_NU.json"
+    },
+    {
+      "code": "en_NZ",
+      "file": "en_NZ.json"
+    },
+    {
+      "code": "ar_OM",
+      "file": "ar_OM.json"
+    },
+    {
+      "code": "es_PA",
+      "file": "es_PA.json"
+    },
+    {
+      "code": "es_PE",
+      "file": "es_PE.json"
+    },
+    {
+      "code": "fr_PF",
+      "file": "fr_PF.json"
+    },
+    {
+      "code": "tpi_PG",
+      "file": "tpi_PG.json"
+    },
+    {
+      "code": "fil_PH",
+      "file": "fil_PH.json"
+    },
+    {
+      "code": "ur_PK",
+      "file": "ur_PK.json"
+    },
+    {
+      "code": "pl_PL",
+      "file": "pl_PL.json"
+    },
+    {
+      "code": "fr_PM",
+      "file": "fr_PM.json"
+    },
+    {
+      "code": "en_PN",
+      "file": "en_PN.json"
+    },
+    {
+      "code": "es_PR",
+      "file": "es_PR.json"
+    },
+    {
+      "code": "ar_PS",
+      "file": "ar_PS.json"
+    },
+    {
+      "code": "pt_PT",
+      "file": "pt_PT.json"
+    },
+    {
+      "code": "pa_PW",
+      "file": "pa_PW.json"
+    },
+    {
+      "code": "gn_PY",
+      "file": "gn_PY.json"
+    },
+    {
+      "code": "ar_QA",
+      "file": "ar_QA.json"
+    },
+    {
+      "code": "fr_RE",
+      "file": "fr_RE.json"
+    },
+    {
+      "code": "ro_RO",
+      "file": "ro_RO.json"
+    },
+    {
+      "code": "sr_RS",
+      "file": "sr_RS.json"
+    },
+    {
+      "code": "ru_RU",
+      "file": "ru_RU.json"
+    },
+    {
+      "code": "rw_RW",
+      "file": "rw_RW.json"
+    },
+    {
+      "code": "ar_SA",
+      "file": "ar_SA.json"
+    },
+    {
+      "code": "en_SB",
+      "file": "en_SB.json"
+    },
+    {
+      "code": "fr_SC",
+      "file": "fr_SC.json"
+    },
+    {
+      "code": "ar_SD",
+      "file": "ar_SD.json"
+    },
+    {
+      "code": "sv_SE",
+      "file": "sv_SE.json"
+    },
+    {
+      "code": "en_SG",
+      "file": "en_SG.json"
+    },
+    {
+      "code": "en_SH",
+      "file": "en_SH.json"
+    },
+    {
+      "code": "sl_SI",
+      "file": "sl_SI.json"
+    },
+    {
+      "code": "nb_SJ",
+      "file": "nb_SJ.json"
+    },
+    {
+      "code": "sk_SK",
+      "file": "sk_SK.json"
+    },
+    {
+      "code": "en_SL",
+      "file": "en_SL.json"
+    },
+    {
+      "code": "it_SM",
+      "file": "it_SM.json"
+    },
+    {
+      "code": "wo_SN",
+      "file": "wo_SN.json"
+    },
+    {
+      "code": "so_SO",
+      "file": "so_SO.json"
+    },
+    {
+      "code": "nl_SR",
+      "file": "nl_SR.json"
+    },
+    {
+      "code": "en_SS",
+      "file": "en_SS.json"
+    },
+    {
+      "code": "pt_ST",
+      "file": "pt_ST.json"
+    },
+    {
+      "code": "es_SV",
+      "file": "es_SV.json"
+    },
+    {
+      "code": "en_SX",
+      "file": "en_SX.json"
+    },
+    {
+      "code": "ar_SY",
+      "file": "ar_SY.json"
+    },
+    {
+      "code": "en_SZ",
+      "file": "en_SZ.json"
+    },
+    {
+      "code": "en_TC",
+      "file": "en_TC.json"
+    },
+    {
+      "code": "ar_TD",
+      "file": "ar_TD.json"
+    },
+    {
+      "code": "fr_TF",
+      "file": "fr_TF.json"
+    },
+    {
+      "code": "fr_TG",
+      "file": "fr_TG.json"
+    },
+    {
+      "code": "th_TH",
+      "file": "th_TH.json"
+    },
+    {
+      "code": "tg_TJ",
+      "file": "tg_TJ.json"
+    },
+    {
+      "code": "tkl_TK",
+      "file": "tkl_TK.json"
+    },
+    {
+      "code": "pt_TL",
+      "file": "pt_TL.json"
+    },
+    {
+      "code": "tk_TM",
+      "file": "tk_TM.json"
+    },
+    {
+      "code": "ar_TN",
+      "file": "ar_TN.json"
+    },
+    {
+      "code": "to_TO",
+      "file": "to_TO.json"
+    },
+    {
+      "code": "tr_TR",
+      "file": "tr_TR.json"
+    },
+    {
+      "code": "en_TT",
+      "file": "en_TT.json"
+    },
+    {
+      "code": "tvl_TV",
+      "file": "tvl_TV.json"
+    },
+    {
+      "code": "zh_TW",
+      "file": "zh_TW.json"
+    },
+    {
+      "code": "sw_TZ",
+      "file": "sw_TZ.json"
+    },
+    {
+      "code": "uk_UA",
+      "file": "uk_UA.json"
+    },
+    {
+      "code": "sw_UG",
+      "file": "sw_UG.json"
+    },
+    {
+      "code": "en_UM",
+      "file": "en_UM.json"
+    },
+    {
+      "code": "es_UY",
+      "file": "es_UY.json"
+    },
+    {
+      "code": "uz_UZ",
+      "file": "uz_UZ.json"
+    },
+    {
+      "code": "it_VA",
+      "file": "it_VA.json"
+    },
+    {
+      "code": "en_VC",
+      "file": "en_VC.json"
+    },
+    {
+      "code": "es_VE",
+      "file": "es_VE.json"
+    },
+    {
+      "code": "en_VG",
+      "file": "en_VG.json"
+    },
+    {
+      "code": "en_VI",
+      "file": "en_VI.json"
+    },
+    {
+      "code": "vi_VN",
+      "file": "vi_VN.json"
+    },
+    {
+      "code": "bi_VU",
+      "file": "bi_VU.json"
+    },
+    {
+      "code": "fr_WF",
+      "file": "fr_WF.json"
+    },
+    {
+      "code": "sm_WS",
+      "file": "sm_WS.json"
+    },
+    {
+      "code": "sq_XK",
+      "file": "sq_XK.json"
+    },
+    {
+      "code": "ar_YE",
+      "file": "ar_YE.json"
+    },
+    {
+      "code": "fr_YT",
+      "file": "fr_YT.json"
+    },
+    {
+      "code": "en_ZA",
+      "file": "en_ZA.json"
+    },
+    {
+      "code": "en_ZM",
+      "file": "en_ZM.json"
+    },
+    {
+      "code": "sn_ZW",
+      "file": "sn_ZW.json"
     }
   ]
 }
