@@ -1,8 +1,8 @@
 # N.E.E.B.L.E.S. Test Module
 
 **Official reference implementation and developer tutorial**
-**Current development source:** `1.2.9` (reinstall/controller candidate, not published through Registry/CUSTOM) · **Ryzen last observed:** `1.2.8` (audit 2026-10-13) · **Module manifest:** schema `4` · **Uninstall:** schema `1` · **Surfaces:** schema `2` · **Commands:** schema `1`
-**Last published integration baseline:** Test Module `1.2.7` with Boss `1.0.51` · **Reference platform:** NEEBLES OS (Debian Trixie, KDE Plasma)
+**Integrated functional reference:** Test Module `1.2.10` with Boss `1.0.54` and compatible CUSTOM V2 · **Ryzen observed:** Install/Uninstall/Reinstall and Tray Open working on 2026-10-14; **Linux autostart and global language propagation remain pending for 1.2.11** · **Module manifest:** schema `4` · **Uninstall:** schema `1` · **Surfaces:** schema `2` · **Commands:** schema `1`
+**Historical published baseline:** Test Module `1.2.7` with Boss `1.0.51` · **Current integrated source:** `1.2.10` (immutable module SHA `97425cde31a7149672b4949f2c2a0498a6c9cb58`) · **Reference platform:** NEEBLES OS (Debian Trixie, KDE Plasma)
 
 > **Boss governs HOW. CUSTOM V2 certifies WHAT. The operating system supplies platform authority. The module declares WHAT IT DOES and implements its own behavior.**
 
@@ -31,6 +31,9 @@ The purpose of this README is to take a developer from an empty module repositor
 17. [Non-goals, security invariants and future evolution](#17-non-goals-security-invariants-and-future-evolution)
 18. [Historical compatibility and release chronology](#18-historical-compatibility-and-release-chronology)
 19. [1.2.8 Uninstall development candidate and pending certification](#19-128-uninstall-development-candidate-and-pending-certification)
+20. Historical: 1.2.9 desktop controller (do not copy to new modules)
+21. Historical: 1.2.10 bridge migration
+22. **Current normative tutorial:** how to build any NEEBLES module (see section 22 below)
 
 ---
 
@@ -40,7 +43,7 @@ This table is the **historical, successfully published 1.2.7 integration snapsho
 
 | Authority | Revision / identity | Meaning |
 |---|---|---|
-| Published module baseline | `1.2.7` | Version of the historical, coordinated release (the current repository manifest is `1.2.8`) |
+| Published module baseline | `1.2.7` | Version of the historical, coordinated release (this was the manifest at the historical 1.2.8 audit; current manifest is `1.2.10`) |
 | Module source | `5db32c4fdec61564415839851c18c092896e11bc` | Published functional reference revision; immutable source selection |
 | CUSTOM V2 | `3416f29e57785a520aef93e456daf71440f06e7e` | Published module material and Construction alignment |
 | Boss Registry | `4c729c4d72ee7dbdf8c25a1501826f557d8678e0` | Published `registry/modules.json` selecting module `1.2.7` |
@@ -52,7 +55,7 @@ This table is the **historical, successfully published 1.2.7 integration snapsho
 
 **These are distinct identities.** The Boss Registry pins a **module source commit**, while Boss Preinstall independently resolves and records an exact **CUSTOM V2 material revision**. A README-only commit does not secretly replace the module source selected by the installed Registry. A future functional module release must deliberately advance all relevant references.
 
-### Current 1.2.8 candidate — audited 2026-10-13
+### Historical 1.2.8 candidate — audited 2026-10-13 (not current source)
 
 | Item | Observed state / source |
 |---|---|
@@ -192,7 +195,7 @@ An example module does not need every optional file. A CLI-only Rust module migh
 
 The identity is a stable machine-readable module ID. This reference uses `test-module`; a future module must consistently replace it in its own paths, contracts and CUSTOM recipes. A display name, repository name or programming language is not an alternative machine identity.
 
-**Current productive declaration (`manifest.json`, 1.2.8 candidate):**
+**Historical 1.2.8 manifest example (NOT the current 1.2.10 manifest):** See the actual `manifest.json` at the selected source revision and the normative tutorial in §22.
 
 ```json
 {
@@ -659,6 +662,8 @@ A new module may define one or several RootFS worlds. Validate the names and per
 
 ## 11. Tray, session controller and Linux startup
 
+> **HISTORICAL CHAPTER (1.2.6–1.2.9):** It describes the private controller evolution. **Do not reproduce it for a new module.** The current authenticated Tray Surface bridge is documented in **§22.5**; real Linux autostart is still pending (**§22.7**).
+
 ### Two separate Tray concepts
 
 1. **NEEBLES Tray's declared `open.tray` Surface**: a Boss-projected module action that uses the normal Governor semantics.
@@ -1003,7 +1008,9 @@ If Governor says `closed/true`, but the controller returns only `opened:false` w
 
 **Scope:** this is a Boss/KDE *startup orchestration* lesson discovered during integration, not a Test Module protocol requirement. Do not modify module material or Boss translations to hide the symptom.
 
-### Tray controller absent, inactive or socket unreachable
+### Tray controller absent, inactive or socket unreachable (LEGACY ONLY)
+
+> This procedure applies only to legacy pre-1.2.10 installations. **Test Module 1.2.10 must not depend on this controller socket or user service.** See §22.5–22.7.
 
 The user service is opt-in; an uninstalled controller is not a Boss defect. Verify `systemctl --user is-active neebles-test-module-session-controller.service` and its journal. Check that the `session_readonly` grant in the certified `tray-provider` step includes the narrow controller socket. Do not grant the whole user runtime directory or loosen the controller socket's ownership/mode to make a failing test pass.
 
@@ -1163,7 +1170,7 @@ the module to simulate one.
 
 ---
 
-## 21. 1.2.10 development candidate — no module-owned session service
+## 21. 1.2.10 — Tray Surface bridge implementation history
 
 Test Module's Tray Provider now calls the **generic, authenticated Tray Manager**
 `surface_query` and `surface_action` API for its own `open.tray` item.
@@ -1190,6 +1197,292 @@ Uninstall contract to remove the old owned unit. Install Boss with the generic
 Tray bridge, then select the pinned 1.2.10 module/CUSTOM revision. Do not
 force a live 1.2.9 update onto an active legacy service during the first test.
 
-**Not certified:** This development candidate is NOT yet published into
-CUSTOM and Registry, and the coordinated Boss build has not passed its physical
-Ryzen install / enable / reboot / tray / Open / Close / uninstall cycle.
+**Status update, 2026-10-14:** Boss 1.0.54, Test Module 1.2.10 and CUSTOM/Registry were published in alignment. Ryzen Install/Uninstall/Reinstall and manual Tray Open were reported successful. **Autostart after Linux reboot and global Boss-language propagation did NOT work** and remain pending. The previous text above describes the historical migration plan; use §22 for the current guide.
+
+<!-- NEEBLES_CANONICAL_TUTORIAL_1210 -->
+
+---
+
+## 22. Manual definitivo de desarrollo de módulos N.E.E.B.L.E.S. — patrón 1.2.10
+
+> **Este es el procedimiento CANÓNICO para módulos nuevos.** Los capítulos 1–21 conservan especificaciones, ejemplos e incidentes históricos de versiones anteriores; donde aparezcan `1.2.7`, `1.2.8`, `1.2.9` o un `session-controller` como requisito del Tray, **no se deben copiar como arquitectura de una implementación nueva**. La base vigente de esta guía es **Boss 1.0.54 + Test Module 1.2.10 + CUSTOM V2 sincronizado + Registry que selecciona 1.2.10**. El código del módulo sigue siendo 1.2.10; **este cambio es exclusivamente documental**, sin crear una 1.2.11 ni cambiar el commit inmutable seleccionado por Registry.
+
+### 22.1. Qué se ha conseguido y qué NO debemos atribuirle
+
+**Evidencia de ejecución aportada por el desarrollador en Ryzen, 14-10-2026:** Boss 1.0.54 quedó publicado con sus 11 artefactos verificados; Test Module 1.2.10 se pudo instalar, desinstalar y reinstalar repetidas veces tras alinear el par de manifiestos de material en CUSTOM; la interfaz propia del módulo y la operación **Open desde Tray mediante Governor** funcionan. Las instalaciones ya no necesitan el controlador privado de sesión. Son observaciones sobre ese equipo y flujo, no una certificación universal para hardware, distribuciones, actualizaciones en vivo o recuperación ante fallos inducidos.
+
+**Pendientes reales para 1.2.11 / posible corrección genérica de Boss:**
+
+1. **Inicio de Tray al entrar a Linux/KDE:** el switch `Start Tray with Linux` acepta y refleja la preferencia, pero después de reiniciar no apareció automáticamente el Tray del módulo. No declarar arreglado el autostart por el hecho de que funcione el switch, el Tray manual o Open.
+2. **Idioma global:** cambiar el idioma en Boss UI no propagó efectivamente el idioma a toda la interfaz de los módulos instalados, incluidos su runtime, UI propia y popup Tray. La arquitectura deseada es **un idioma global de Boss**, con propagación coherente a todos los módulos; **no está implementada/validada extremo a extremo en 1.2.10**.
+
+**Los dos pendientes son de integración, no excusa para degradar las fronteras de seguridad**. Se resolverán en 1.2.11 y, si la causa se encuentra en un servicio o contrato general, en una versión correspondiente de Boss. Hasta entonces no marcarlos como GREEN. Las notas de usuario para Boss 1.0.54 en el modal también se detectaron como asunto separado: existen notas técnicas de release pero faltaron archivos de presentación localizados de esa versión. No afirmar que ya se corrigió.
+
+### 22.2. Ley arquitectónica, válida para cualquier lenguaje
+
+Un módulo es un producto autónomo **declarativo, gobernado y aislable**, no un plugin cuyo lenguaje tenga que comprender Boss:
+
+```text
+Repositorio del módulo            RESPONSABLE DEL QUÉ
+  manifest.json                   ID, versión, referencias y capacidades
+  lifecycle.json                  transiciones/operaciones
+  contracts/commands.json         endpoints públicos
+  surfaces.json                   elementos de UI, Launcher y Tray
+  runtime propio                  comportamiento, IPC, vida útil
+  UI opcional                     presentación sin autoridad de administración
+  Tray opcional                   proveedor/popup e interacción con Boss Tray Manager
+  settings/languages/notes        preferencias, textos y cambios visibles
+            |
+            v
+Registry en neebles-boss          SELECCIÓN DE FUENTE INMUTABLE
+  {repo, commit, version}          debe coincidir con manifest del commit
+            |
+            v
+CUSTOM V2                         RESPONSABLE DEL MATERIAL
+  manifiestos + SHA-256           paquetes, archivos, integridad, RootFS
+  domestic-runtime.json           mundos/capacidades del runtime
+  construction/<id>.json          pasos y autoridades explícitas
+            |
+            v
+Boss + NEEBLES OS                 RESPONSABLES DEL CÓMO
+  autenticación, Polkit            autorización de operaciones
+  Governor + RuntimeRegistry      estado Active/Open, ejecución, single-flight
+  Module IPC + Tray Manager       transportes distintos y autenticados
+  RuntimeLease + transactions     aislamiento, instalación, desinstalación
+  KDE/OS                          sesión gráfica y servicios del sistema
+```
+
+**Regla fundamental:** Boss nunca debe contener condiciones como `if module == "test-module"`, `if language == "python"` o código específico del Tray de un fabricante. Si falta una capacidad, diseñar un **contrato genérico**, no un bypass por módulo.
+
+### 22.3. Receta de creación, desde un repositorio vacío
+
+1. Elegir un ID estable y único, por ejemplo `sensor-monitor`; utilizarlo sin contradicciones en `manifest.name`, identidad del runtime, `owner_module`, Construction y rutas. El nombre comercial o el título traducido puede ser distinto; **el ID no se traduce**.
+2. Definir versión semántica, manifiesto y contratos. Esta referencia usa `manifest.json` schema **4**, `contracts/commands.json` schema **1**, `surfaces.json` schema **2**, `uninstall` schema **1** si se declara. Usar la implementación real como fuente de campos permitidos: no introducir nuevos campos por intuición.
+3. Implementar el runtime en **cualquier tecnología** que pueda hablar el contrato autenticado de Module IPC. La implementación Python/Tk es solo un ejemplo.
+4. Decidir si el módulo necesita ventana, ejecución en segundo plano, notificaciones, Launcher, Tray, Settings, varias superficies, o ninguna de ellas. **Solo declarar lo que se implementará.**
+5. Preparar CUSTOM V2 con los paquetes necesarios y únicamente las autoridades de ejecución que requiere el módulo. No instalar paquetes a escondidas en el host para compensar un RootFS incompleto.
+6. Validar fuente, materiales, contratos y pruebas aisladas; publicar commit inmutable; alinear CUSTOM; publicar Registry; instalar por Boss y probar físicamente el ciclo.
+
+Plantilla mínima orientativa de estructura (opciones eliminables, no exigencias universales):
+
+```text
+modulo-ejemplo/
+├── README.md
+├── manifest.json
+├── lifecycle.json
+├── contracts/commands.json
+├── runtime.<lenguaje>
+├── surfaces.json                  # si hay Launcher, Tray o UI Surface
+├── settings/default.json         # si hay preferencias
+├── languages/manifest.json       # si hay textos localizados
+├── languages/es_CL.json
+├── languages/en_US.json
+├── ui/                             # si hay UI de aplicación
+├── tray/                            # si hay proveedor/popup
+├── critical-update/manifest.json
+├── critical-update/release-notes/  # por versión y locale
+└── tests/
+```
+
+**En Test Module 1.2.10**, `manifest.tray` declara `provider=tray/tray-provider.py`, `protocol=1`, `construction_step=tray-provider`. `lifecycle.json` tiene `governor.open -> open` y su operación `boss.workspace_execution / construction.step / open-runtime`. `surfaces.json` declara `open.launcher` y `open.tray` separados, ambos solicitando la misma acción `open`; `config.notify-switch` usa un objeto con transiciones declaradas. El runtime se registra en Boss; no hay instancia paralela de Governor dentro de Python.
+
+### 22.4. Contratos y estados: un solo dueño de cada decisión
+
+- **Commands** enumera endpoints públicos permitidos; el runtime debe exponer exactamente los endpoints declarados. El contrato real está en `contracts/commands.json`. Los intents internos de la UI (`runtime.py` y `ui/test-module-ui.py`) son privados: **no se convierten automáticamente en comandos administrativos ni públicos**.
+- **Lifecycle** define `governor.install`, `.update`, `.uninstall`, `.enable`, `.disable`, `.open` y las transiciones propias si existen. `install/update/enable` vacíos son válidos cuando no hay operaciones de negocio que ejecutar. **No inventar instalación de servicios de sesión** solo porque se activó un módulo.
+- **Governor / RuntimeRegistry** determina `enabled`, `closed/opening/open` y `open_available`. La misma operación Open desde Boss UI, Launcher o Tray tiene que producir un único registro de runtime; el popup no lleva un contador independiente de instancias.
+- **Surfaces** declaran `surface`, `visible`, `item_id`, `data.control`, `data.action` o `action_on/action_off`, y `require` según el contrato. Una acción que no exista en la superficie instalada **debe fallar**.
+- **Settings** conserva preferencias de usuario, como `tray.visible`, `tray.autostart`, `features.option1`, `features.option2`. **Las preferencias no sustituyen estado de Governor**, ni un switch marcado prueba que arrancó un proceso.
+- **Notifications** pasan por el contrato autenticado y el presentador de Boss. No crear un segundo servicio de notificaciones o autoridad por módulo.
+
+Flujo ejemplar de **Open**:
+
+```text
+Clic Boss UI / Launcher / Tray
+ -> Surface declarada y requisito satisfecho
+ -> Boss valida identidad del módulo, item_id y acción
+ -> Governor resuelve Lifecycle y evita Open duplicado
+ -> Construction 'open-runtime' en el RootFS declarado
+ -> runtime registra endpoints y session_id en Module IPC
+ -> se presenta la UI propia (si la hay)
+ -> cerrar UI -> runtime unregister/desconexión gobernada
+ -> Governor vuelve a closed y Open queda disponible
+```
+
+**Cierre correcto:** un clic sobre la X de la UI debe liberar su sesión de Module IPC. No inferir estado mirando el título de una ventana; no dejar el proceso vivo indefinidamente ni matar procesos ajenos por nombre.
+
+### 22.5. Tray moderno 1.2.10: proveedor propio, manager común, Governor único
+
+**Tray de NEEBLES no significa "ventana principal del módulo".** Es una superficie opcional, con icono y popup propios, cuyo ciclo y transporte gobierna Boss; la UI completa del módulo puede estar cerrada y el proveedor Tray continuar activo.
+
+La implementación vigente se reparte así:
+
+| Pieza | Contrato / responsabilidad |
+|---|---|
+| `manifest.json` / `tray` | Declara proveedor, icono, protocolo y Construction step |
+| `surfaces.json` / `open.tray` | Declara el botón/action de Open como Surface del módulo |
+| `tray/tray-provider.py` | Implementa el popup, se registra, envía heartbeats, consulta y pide acciones |
+| `neebles/tray.sock` | Socket del **Tray Manager genérico** de la sesión, no del controlador privado |
+| `src/tray/protocol.rs` + `src/tray/ipc.rs` de Boss | Transporte `surface_query` / `surface_action`, identidad, ownership, respuestas |
+| Governor y dispatcher de Boss | Validan el contrato recién leído, privilegios y transición efectiva |
+| `runtime/construction/<modulo>.json` de CUSTOM | Autoriza el `tray-provider` en RootFS y monta solo los recursos necesarios |
+
+El proveedor actual habla **JSON delimitado por salto de línea** con Tray Manager. El runtime principal, en cambio, usa **Module IPC con prefijo de longitud de 4 bytes**: son protocolos distintos, con autorizaciones distintas. No montarlos indistintamente.
+
+Registro (fragmento **real** de la implementación, valores ilustrativos para otro módulo):
+
+```json
+{"type":"register","protocol":1,"tray_id":"sensor-monitor","owner_module":"sensor-monitor","pid":1234}
+```
+
+Luego el proveedor mantiene un `heartbeat` periódico y atiende mensajes `open`, `close`, `focus`, `resize`, `reload`, `settings_changed`, además de snapshots/resultados de Surface. Debe cerrar su registro cuando termine; no dejar un icono huérfano ni iniciar un segundo proveedor por cada clic.
+
+Consulta de estado y solicitud de apertura (una línea JSON por mensaje):
+
+```json
+{"type":"surface_query","tray_id":"sensor-monitor","item_id":"open.tray"}
+{"type":"surface_action","tray_id":"sensor-monitor","item_id":"open.tray","action":"open"}
+```
+
+El Tray Manager comprueba **peer de sesión, PID del proveedor realmente gobernado, registro propietario, item de Surface instalado, visibilidad y acción declarada**. Para la consulta responde `surface_snapshot` con `enabled`, `runtime_state` y `open_available`; para la acción responde `surface_action_result` con `ok` y error opcional. **Nunca aceptar respuestas de otro `tray_id` o `item_id`**, ni abrir la UI por una ruta host alternativa si Boss devuelve error.
+
+Este es el patrón reutilizable para un módulo tipo monitor de hardware, administrador de redes o sustituto de MSI Afterburner: el módulo implementa sensores, gráficos, botones y popup; **Boss solo conoce contratos genéricos** y valida cada operación. Los datos particulares del dispositivo no se codifican en Boss.
+
+**Varios Trays:** Boss puede administrar **distintos proveedores pertenecientes a diferentes módulos**, cada cual identificado por su dueño, con ciclo y Settings independientes. Cada proveedor puede presentar varias opciones/controles y declarar varios items en `surfaces.json`. El ejemplo certificado aquí declara **un proveedor `tray` por módulo**; **varios iconos/proveedores distintos dentro de un mismo módulo no están demostrados por este ejemplo** y requieren contrato/diseño y una prueba específica antes de prometerlos. No resolverlo lanzando proveedores sin registro o reutilizando identidades de otros módulos.
+
+**No copiar del legado:** `test-module-controller.sock`, `install-session-controller.py`, `session-controller.py`, y el servicio `systemd-user` privado fueron soluciones de 1.2.6–1.2.9. La **1.2.10 NO depende ni se comunica con ese controlador**. Los archivos pueden permanecer en este repositorio por historia/migración. La declaración opcional de `uninstall.extras` para `neebles-test-module-session-controller.service` solo permite **retirar instalaciones antiguas**; **no es una orden para crear ese servicio** en un módulo nuevo.
+
+### 22.6. CUSTOM V2: exactitud del material, no instalación a ciegas
+
+El repositorio `neebles-custom` conserva la autoridad material; **no copiar RootFS binarios al repositorio del módulo ni modificar `neebles-custom/runtime/boss/rootfs` o Calamares para reparar un Tray**. Para Test Module se usan:
+
+```text
+runtime/construction/test-module.json
+runtime/modules/domestic-runtime.json
+runtime/manifests/modules/essentials.packages.tsv
+runtime/manifests/modules/essentials.manifest.json
+runtime/manifests/modules/test-module.packages.tsv            # material histórico/compatibilidad
+runtime/manifests/modules/test-module.manifest.json            # metadata de módulo
+runtime/manifests/modules/rootfs/test-module/python3.13-tk.packages.tsv
+runtime/manifests/modules/rootfs/test-module/python3.13-tk.manifest.json
+```
+
+El archivo `material/python3.13-tk.manifest.json` del repositorio de Test Module conserva la identidad histórica `1.2.3`; **NO usarlo como autoridad material para un módulo nuevo ni confundirlo con el manifiesto actual de CUSTOM**.
+
+El modelo Multi-RootFS es **por identidad de receta**: `module`, `version`, `rootfs` y exactamente los paquetes, archivos, rutas, modos y SHA-256 autorizados. Los mundos son declarativos; este ejemplo usa `modules.python3.13-tk`, pero ningún módulo tiene obligación de usar Python. Una futura receta C++, Rust, Node u otra crea sus propios materiales y Construction sin cambiar un `if` en Boss.
+
+**Error real corregido el 14-10-2026:** la instalación de fuente 1.2.10 falló con:
+
+```text
+rootfs material identity mismatch:
+expected=test-module/1.2.10/python3.13-tk
+actual=test-module/1.2.9/python3.13-tk
+```
+
+La causa estaba en `"version": "1.2.9"` de **dos** manifiestos de CUSTOM: `runtime/manifests/modules/test-module.manifest.json` y `runtime/manifests/modules/rootfs/test-module/python3.13-tk.manifest.json`. Se alinearon a `1.2.10` **sin reemplazar sus 2.242 entradas ni sus hashes**; el desarrollador informó que la instalación pasó. **Nunca eliminar la validación o forzar el material anterior** para conseguir un Install aparentemente GREEN. La transacción rechazó correctamente una identidad no coincidente.
+
+Construction de este ejemplo contiene `init`, `fetch`, `checkout`, `open-runtime`, `tray-provider`; el SHA de `fetch`/`checkout` debe igualar exactamente el que selecciona Boss Registry. El step `tray-provider` es **persistente**, usa el RootFS correcto, ejecuta el proveedor declarado y tiene acceso restringido a `neebles/tray.sock`; **no** monta `test-module-controller.sock`.
+
+### 22.7. Preferencias de Tray y arranque de sesión: contrato vs resultado observado
+
+Los valores reales de `settings/default.json` se almacenan como cadenas:
+
+```json
+{
+  "tray": {
+    "visible": "false",
+    "autostart": "false",
+    "session_boot_id": ""
+  }
+}
+```
+
+- `tray.visible`: intención de mostrar icono/proveedor en la sesión.
+- `tray.autostart`: intención de iniciar el Tray al arrancar Linux/iniciar la sesión gráfica.
+- `tray.session_boot_id`: señal de sesión usada por el ejemplo para diferenciar reinicios y reconciliaciones. **No** representa el estado real de un proceso.
+
+En Boss 1.0.54 existe `tray-provider-reconcile`: Tray Manager lo solicita a Boss con reintentos al iniciar y el dispatcher llama a `start_enabled_tray_providers()`. Boss ejecuta el step de Construction sin inventar el runtime de Python. **Lo que existe en código no prueba el resultado al login real.** El reinicio en Ryzen mostró que el switch no produce el inicio/visibilidad pretendidos. Debe inspeccionarse el arranque de Tray Manager, Tray Host, la conexión al Boss persistente, el momento de reconciliación, visibilidad y estado persistido, **sin asumir una causa antes de medirla**.
+
+**Condiciones de aceptación futuras:** activar `Show Tray` y `Start Tray with Linux`, cerrar sesión o reiniciar, volver a iniciar KDE, y ver el icono del módulo **sin abrir Boss ni ejecutar Open manualmente**. Pulsar el icono muestra el popup; pulsar Open abre la app una sola vez y al cerrar se libera Governor. Desactivar autostart debe evitar la aparición automática en el siguiente login, sin impedir la activación manual legítima de Tray. Probar con al menos dos módulos con Tray, sin contaminaciones cruzadas.
+
+Diagnóstico de lectura en la máquina instalada (revisar nombres reales de unidades en esa imagen antes de actuar):
+
+```bash
+systemctl --user status neebles-tray-manager.service neebles-tray-host.service --no-pager
+journalctl --user -b -u neebles-tray-manager.service -u neebles-tray-host.service --no-pager -n 120
+pgrep -af 'neebles.*tray|tray-provider.py|bwrap'
+ls -l "/run/user/$(id -u)/neebles/tray.sock"
+neebles boss surface-model
+```
+
+No reinstalar servicios privados, añadir `sudo` al módulo, montar todo `/run/user` ni introducir autostart paralelo para encubrir el problema.
+
+### 22.8. Idioma GLOBAL de Boss para todos los módulos: especificación de 1.2.11
+
+**Regla requerida por el proyecto:** el idioma seleccionado en **Boss UI es la preferencia global canónica** para **todos los módulos instalados**, sus pantallas, textos de Surfaces, Tray, ventanas y mensajes visibles. Un módulo declara los locales que soporta y su idioma de reserva (`languages/manifest.json`); no crea una preferencia global competidora. Si un módulo no incluye el idioma seleccionado, se usa **su fallback declarado** con comportamiento explícito, nunca claves crudas sin explicación.
+
+**Situación real de 1.2.10:** Boss lee un idioma de configuración y lo entrega como `NEEBLES_LANGUAGE` al **iniciar** el proceso `tray-provider`; `runtime.py`, `ui/test-module-ui.py` y `tray/tray-provider.py` leen archivos localizados con `NEEBLES_LANGUAGE` y fallback. **Eso NO equivale a propagar un cambio realizado en Boss UI mientras los procesos ya están vivos**; no hay evidencia de que el ajuste global actualice de manera integral todas esas superficies. El desarrollador confirmó que el lenguaje no funciona como quiere. No anotarlo como implementación terminada.
+
+**Contrato deseado a especificar y probar:**
+
+1. Boss es fuente de verdad del locale global, por ejemplo `es_CL` o `en_US`, y normaliza la identidad del idioma.
+2. Boss resuelve por módulo su `languages/manifest.json`, locale solicitado y fallback sin alterar el ID o los valores técnicos del módulo.
+3. Al cambiar Boss UI el locale, **todos los módulos instalados** reciben o consultan el cambio por un mecanismo genérico y autorizado. Ningún módulo necesita modificaciones específicas en Boss.
+4. Los controles de Boss UI, Launcher, Surfaces, popup Tray y UI propia actualizan los **textos visibles** o reinician de forma gobernada su **presentación**, sin perder Settings ni falsificar estados Lifecycle. Un simple cambio del environment de un proceso que ya está vivo **no lo actualiza**; decidir contrato de evento/reload o recreación antes de programar.
+5. El diseño debe funcionar para módulos en distintos lenguajes de programación; los que estén inactivos deben usar el nuevo idioma al activarse; los ya activos deben actualizarse de manera definida.
+6. El test mínimo alterna `es_CL → en_US → es_CL` con **dos módulos instalados**, uno con UI propia y otro con Tray, y verifica títulos, botones, notificaciones, Surfaces, ausencia de claves en crudo y conservación de estados. Los cambios de idioma no deben causar duplicados de Governor ni procesos huérfanos.
+
+Hasta superar esa matriz, etiquetar esta capacidad como **PENDIENTE 1.2.11**. Si Boss necesita extender su puente genérico de idioma y eventos, versionar y probar Boss por separado; el módulo sigue consumiendo el contrato común.
+
+### 22.9. Uninstall, reinstall, rollback, notas y modos de fallo
+
+- **Instalación:** Boss descarga el commit exacto seleccionado, verifica contratos, CUSTOM material y paquetes, prepara una transacción y solo publica una instalación coherente. Polkit autoriza la acción de Boss; el módulo no se instala a sí mismo con `sudo`.
+- **Enable/Disable:** privilegio y estado gestionados por Boss. El módulo no puede presentar `enabled=true` por escribir un archivo local arbitrario.
+- **Update/Critical Update:** identidad de versión, fuente y material tienen que coincidir. `critical-update/manifest.json` del ejemplo es `[]`, válido; no implica que exista una migración ejecutable nueva. Los Release Notes de módulo son por idioma y versión, por ejemplo `critical-update/release-notes/es_cl_1_2_10.txt` y `en_us_1_2_10.txt`.
+- **Uninstall:** Boss controla la transacción TXN V5 y retira únicamente los recursos **declarados y de propietario verificado** (runtime, Tray, RootFS/material vinculado, archivos y Settings según elección). El extra `systemd-user` de Test Module 1.2.10 sigue siendo **opcional y legado**, solo para retirar controladores de antiguas instalaciones. No borrar otros servicios de usuario, no matar todos los Python ni borrar directorios generales de NEEBLES.
+- **Rollback/abort:** pre-commit debe poder conservar/restablecer material e instalación original; errores posteriores al commit se informan sin resucitar un estado a medio borrar. Distinguir prueba de caso feliz de ensayo de fallos y compensación.
+- **Modal de Release Notes:** si el cambio requiere recarga completa de Boss/Tray/Launcher, la UI de Boss es responsable de su modal y del botón **Reboot siempre visible** con aviso de guardar trabajo (criterio de producto); **no atribuir al módulo la implementación del modal**. La ausencia de notas localizadas de Boss 1.0.54 fue observada y queda fuera de esta documentación, sin declararla reparada.
+
+### 22.10. Orden definitivo de trabajo y puertas de publicación
+
+Este orden evita repetir el problema de una versión cuyo Registry ya fue cambiado antes de alinear CUSTOM:
+
+| Fase | Acción | Evidencia mínima |
+|---|---|---|
+| 01. Diseño | ID, vida útil, contracts, Surfaces, Settings, idiomas, recursos opcionales | Declaraciones legibles sin capacidades inventadas |
+| 02. Runtime | Implementación en lenguaje propio; registro Module IPC y Close auténtico | Tests y funcionamiento de Open/Close en entorno de prueba |
+| 03. Tray opcional | Proveedor autenticado, manager común, heartbeat, owner, surface query/action | Popup y Open vía Governor, sin controlador privado |
+| 04. Material | CUSTOM V2: miembros, SHA, versión, RootFS, Construction, grants | Metadatos exactos, sin excepciones a integridad |
+| 05. Source | Tests de contrato y cambios revisados en Git local; commit/push | SHA inmutable del módulo y fuente limpia |
+| 06. CUSTOM | `fetch` y `checkout` fijados al SHA del módulo; identidades coincidentes | Commit de CUSTOM con manifiestos coherentes |
+| 07. Boss compatible | Publicar y verificar build si exige contratos genéricos nuevos | Release + artefactos certificados, no solo GitHub Actions verde |
+| 08. Registry | Seleccionar `repo`, `commit`, `version` exactos | Registry, manifest y CUSTOM alineados |
+| 09. Ryzen | Install, Enable, Open/Close desde todas las superficies | Evidencia real sin instancias duplicadas |
+| 10. Ciclo | Uninstall/reinstall repetidos, Settings preserve/remove | Sin recursos huérfanos ni borrados ajenos |
+| 11. Sesión | Logout/reboot, autostart Tray, visibilidad | Icono disponible automáticamente según preferencia |
+| 12. Idioma | Boss idioma global propagado a **todos** los módulos | `es_CL → en_US → es_CL` sin estado perdido |
+| 13. Release | Notas localizadas y migraciones; repetir gates afectados | Sin afirmar pruebas no ejecutadas |
+
+**Estado de la base 1.2.10:** 01–08 publicados/integrados; 09 y ciclo de 10 **reportados satisfactorios en Ryzen para los recorridos usados**; 11 **FALLA observada**; 12 **FALLA observada**; pruebas de rollback inducido, dos Trays simultáneos y cobertura exhaustiva de todos los escenarios siguen sin certificación. La 1.2.11 debe cerrar esos dos fallos antes de llamarse tutorial totalmente certificado.
+
+Pruebas de fuente existentes en el ejemplo:
+
+```bash
+cd /home/thomyorke/NEEBLES/neebles-test-module
+python3 -m json.tool manifest.json >/dev/null
+python3 -m json.tool lifecycle.json >/dev/null
+python3 -m json.tool surfaces.json >/dev/null
+python3 -m json.tool contracts/commands.json >/dev/null
+python3 -m unittest discover -s tests -v
+python3 -m py_compile runtime.py ui/test-module-ui.py tray/tray-provider.py
+```
+
+**La aprobación de los tests de fuente no sustituye las pruebas de reinicio de sesión, propagación de idioma y desinstalación en Ryzen.** Registrar qué se ejecutó, qué versión estaba instalada, cómo se provocó cada acción, y el resultado observable.
+
+### 22.11. Contrato reutilizable para un módulo futuro, por ejemplo un monitor GPU
+
+Un nuevo módulo `hardware-monitor` podría declarar un runtime persistente de métricas, acciones limitadas (`start_sampling`, `stop_sampling`, `open_dashboard`), una o varias **Surface items**, Settings para frecuencia/unidades y un Tray con menú propio. Puede usar Rust/C++ y una UI Qt; si necesita varios RootFS o dependencias diferentes, los declara en su propia receta CUSTOM. **No reutiliza `test-module` como nombre, no introduce un daemon secreto y no llama a un Boss administrativo irrestricto**. El control de Open, la sesión del Tray, Notifications, Uninstall y el idioma siguen contratos comunes.
+
+Si quiere **varios iconos Tray independientes dentro de un mismo módulo**, esa capacidad debe diseñarse explícitamente y certificarse; no está garantizada por el hecho de admitir muchas opciones en un popup, múltiples `surface=tray` o varios módulos con sus respectivos Trays.
+
+**Resumen normativo:** el módulo decide su funcionalidad y presentación; CUSTOM acredita cada byte y autoridad; Boss es el único gobernador del sistema. La arquitectura se conserva aunque cambien los lenguajes, las ventanas, los iconos, el número de módulos o el hardware. **Autostart global y traducción global deben terminarse, no simularse como terminados.**
